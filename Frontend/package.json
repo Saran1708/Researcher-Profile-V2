@@ -1,0 +1,36 @@
+{
+  "private": true,
+  "description": "https://github.com/mui/material-ui/blob/v7.2.0/docs/data/material/templates/marketing-page/MarketingPage.tsx",
+  "type": "module",
+  "scripts": {
+    "dev": "vite",
+    "build": "vite build",
+    "preview": "vite preview"
+  },
+  "dependencies": {
+    "@emotion/react": "latest",
+    "@emotion/styled": "latest",
+    "@mui/icons-material": "latest",
+    "@mui/lab": "^7.0.0-beta.14",
+    "@mui/material": "latest",
+    "@mui/utils": "latest",
+    "@mui/x-date-pickers": "^8.8.0",
+    "axios": "^1.10.0",
+    "dayjs": "^1.11.13",
+    "framer-motion": "^12.23.3",
+    "react": "latest",
+    "react-dom": "latest",
+    "react-easy-crop": "^5.5.0",
+    "react-router-dom": "^7.6.3",
+    "styled-components": "^6.1.19",
+    "typescript": "latest"
+  },
+  "devDependencies": {
+    "@types/node": "^24.2.1",
+    "@types/react": "latest",
+    "@types/react-dom": "latest",
+    "@types/react-router-dom": "^5.3.3",
+    "@vitejs/plugin-react": "latest",
+    "vite": "latest"
+  }
+}
