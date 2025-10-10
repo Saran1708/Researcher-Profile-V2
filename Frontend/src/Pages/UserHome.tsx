@@ -8,6 +8,9 @@ import Footer from '../components/MainComponents/Footer.tsx';
 
 import UserAppAppBar from '../components/UserHome/UserAppAppBar.tsx';
 import DashboardHero from '../components/UserHome/UserHero.tsx';
+import ProfileStatsCard from '../components/UserHome/ProfileStatsCard.tsx';
+import ResearcherBadges from '../components/UserHome/ResearcherBadges.tsx';
+
 
 export default function UserHome(props: { disableCustomTheme?: boolean }) {
 
@@ -18,9 +21,10 @@ export default function UserHome(props: { disableCustomTheme?: boolean }) {
 
       <UserAppAppBar/>
      <DashboardHero/>
+     <ProfileStatsCard/>
       <div>
-        
-       
+     
+       <ResearcherBadges/>
         
 
 

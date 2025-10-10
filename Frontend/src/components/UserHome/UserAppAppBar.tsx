@@ -47,22 +47,27 @@ export default function UserAppAppBar() {
     navigate('/edit')
   }
 
-const handleLogoutClick = () => {
-  // Remove tokens from localStorage using correct keys
-  localStorage.removeItem('access_token');
-  localStorage.removeItem('refresh_token');
-  localStorage.removeItem('email');
+  const handleProfileClick = () => {
+    navigate("/profile")
+  }
 
-  // Verify removal
-  console.log('LocalStorage check:', {
-    access_token: localStorage.getItem('access_token'),
-    refresh_token: localStorage.getItem('refresh_token'),
-    email: localStorage.getItem('email'),
-  });
 
-  // Navigate to home page
-  navigate('/');
-};
+  const handleLogoutClick = () => {
+    // Remove tokens from localStorage using correct keys
+    localStorage.removeItem('access_token');
+    localStorage.removeItem('refresh_token');
+    localStorage.removeItem('email');
+
+    // Verify removal
+    console.log('LocalStorage check:', {
+      access_token: localStorage.getItem('access_token'),
+      refresh_token: localStorage.getItem('refresh_token'),
+      email: localStorage.getItem('email'),
+    });
+
+    // Navigate to home page
+    navigate('/');
+  };
 
 
   return (
@@ -81,16 +86,21 @@ const handleLogoutClick = () => {
           <Box sx={{ flexGrow: 1, display: 'flex', alignItems: 'center', px: 0 }}>
             <Sitemark />
             <Box sx={{ display: { xs: 'none', md: 'flex' } }}>
-              <Button 
+              <Button
                 onClick={handleHomeClick}
                 variant="text" color="info" size="small"
               >
                 Dashboard
               </Button>
-              <Button 
-              onClick={handleEditClick}
-              variant="text" color="info" size="small">
+              <Button
+                onClick={handleEditClick}
+                variant="text" color="info" size="small">
                 Details
+              </Button>
+              <Button 
+              onClick={handleProfileClick}
+              variant="text" color="info" size="small">
+                Profile
               </Button>
               <Button variant="text" color="info" size="small">
                 Blogs
@@ -142,7 +152,8 @@ const handleLogoutClick = () => {
                 </Box>
 
                 <MenuItem onClick={handleHomeClick}>Dashboard</MenuItem>
-                <MenuItem  onClick={handleEditClick}>Details</MenuItem>
+                <MenuItem onClick={handleEditClick}>Details</MenuItem>
+                <MenuItem  onClick={handleProfileClick} > Profile </MenuItem>
                 <MenuItem>Blogs</MenuItem>
                 <Divider sx={{ my: 3 }} />
                 <MenuItem>

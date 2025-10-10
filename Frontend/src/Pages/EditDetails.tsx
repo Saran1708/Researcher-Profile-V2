@@ -63,6 +63,9 @@ export default function EditDetails(props: { disableCustomTheme?: boolean }) {
           <div>
             <UserDetailsForm />
             <EducationalDetailsForm />
+             
+            <ResearchCareerForm />
+            <CareerHighlightForm />
             <ResearchDetailsForm />
             <ResearchIdForm />
             <FundingForm />
@@ -74,8 +77,7 @@ export default function EditDetails(props: { disableCustomTheme?: boolean }) {
             <ResourcePersonForm />
             <CollaborationForm />
             <ConsultancyForm />
-            <CareerHighlightForm />
-            <ResearchCareerForm />
+           
           </div>
         )}
       </div>

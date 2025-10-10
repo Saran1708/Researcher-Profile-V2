@@ -7,6 +7,9 @@ import ResetPassword from './Pages/ResetPassword';
 import PrivateRoute from "./components/Routing/PrivateRoute";
 import UserHome from './Pages/UserHome';
 import Loader from './components/MainComponents/Loader';
+import UserProfile from './Pages/UserProfile';
+import { GlobalStyles } from '@mui/material'; 
+import CssBaseline from '@mui/material/CssBaseline';
 
 const App = () => {
   const location = useLocation();
@@ -42,6 +45,15 @@ const App = () => {
 
   return (
     <>
+    {/* ✅ Add global resets here */}
+      <CssBaseline />
+      <GlobalStyles
+        styles={{
+          html: { width: '100%', height: '100%', overflowX: 'hidden', overscrollBehavior: 'none' },
+          body: { margin: 0, width: '100%', overflowX: 'hidden' },
+          '#root': { maxWidth: '100%', overflowX: 'hidden' },
+        }}
+      />
       <Routes>
         <Route path="/" element={<LandingPage />} />
         <Route path="/login" element={<SignIn />} />
@@ -59,6 +71,14 @@ const App = () => {
           element={
             <PrivateRoute>
               <UserHome />
+            </PrivateRoute>
+          }
+        />
+        <Route
+          path="/profile"
+          element={
+            <PrivateRoute>
+              <UserProfile />
             </PrivateRoute>
           }
         />

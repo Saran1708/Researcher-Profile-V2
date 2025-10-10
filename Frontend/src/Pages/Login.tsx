@@ -98,13 +98,35 @@ export default function SignIn(props: { disableCustomTheme?: boolean }) {
         navigate('/home', { state: { skipLoader: true } });
       }
     } catch (error: any) {
-      if (axios.isAxiosError(error)) {
-        setPasswordError(true);
-        setPasswordErrorMessage('Invalid email or password.');
-      }
-      console.error(error);
       setLoading(false); // hide loader on error
+
+      if (axios.isAxiosError(error)) {
+        if (error.response) {
+          // ✅ Backend responded (invalid credentials or other API error)
+          if (error.response.status === 400 || error.response.status === 401) {
+            setPasswordError(true);
+            setPasswordErrorMessage('Invalid email or password.');
+          } else {
+            setPasswordError(true);
+            setPasswordErrorMessage('Something went wrong. Please try again.');
+          }
+        } else if (error.request) {
+          // 🚫 No response from server (API down / network issue)
+          setPasswordError(true);
+          setPasswordErrorMessage('Server not responding. Please try again later.');
+        } else {
+          // ⚙️ Something else (e.g. bad config)
+          setPasswordError(true);
+          setPasswordErrorMessage('Unexpected error occurred.');
+        }
+      } else {
+        // Non-Axios error (just in case)
+        setPasswordError(true);
+        setPasswordErrorMessage('Unexpected error occurred.');
+      }
+
     }
+
   };
 
   const validateInputs = () => {
