@@ -95,16 +95,14 @@ export default function UserAppAppBar() {
               <Button
                 onClick={handleEditClick}
                 variant="text" color="info" size="small">
-                Details
+                Edit Details
               </Button>
               <Button 
               onClick={handleProfileClick}
               variant="text" color="info" size="small">
-                Profile
+                View Profile
               </Button>
-              <Button variant="text" color="info" size="small">
-                Blogs
-              </Button>
+             
             </Box>
           </Box>
           <Box
@@ -152,9 +150,9 @@ export default function UserAppAppBar() {
                 </Box>
 
                 <MenuItem onClick={handleHomeClick}>Dashboard</MenuItem>
-                <MenuItem onClick={handleEditClick}>Details</MenuItem>
-                <MenuItem  onClick={handleProfileClick} > Profile </MenuItem>
-                <MenuItem>Blogs</MenuItem>
+                <MenuItem onClick={handleEditClick}>Edit Details</MenuItem>
+                <MenuItem  onClick={handleProfileClick} >View Profile </MenuItem>
+               
                 <Divider sx={{ my: 3 }} />
                 <MenuItem>
                   <Button

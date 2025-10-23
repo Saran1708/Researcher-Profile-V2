@@ -10,6 +10,7 @@ import Loader from './components/MainComponents/Loader';
 import UserProfile from './Pages/UserProfile';
 import { GlobalStyles } from '@mui/material'; 
 import CssBaseline from '@mui/material/CssBaseline';
+import ResearchBlogManager from './Pages/ResearchBlogManager';
 
 const App = () => {
   const location = useLocation();
@@ -82,6 +83,8 @@ const App = () => {
             </PrivateRoute>
           }
         />
+
+        
         <Route path="*" element={<div>Page not found</div>} />
       </Routes>
 

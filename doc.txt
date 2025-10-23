@@ -1,0 +1,97 @@
+1)these are basic details this should be staring of the page : 
+
+Profile Picture 
+Full Name
+Department
+Phone Number 
+Address 
+Website 
+
+2) education
+User can have multiple education details:
+
+Degree 
+College/University 
+Start Year 
+End Year
+
+3) research career 
+here this section is a paragraph and the maximum length is 500 words
+
+4) career highlights 
+here this section is a paragraph and the maximum length is 500 words
+
+5) Research details 
+user can have multiple research area. example ai, coding
+
+Research Area
+
+6) Research Ids
+User can have multiple set of research ids
+
+Research Title 
+Research Link
+
+7) Funding Details
+User can have multiple fundings
+
+Project Title 
+Funding Agency 
+Funding Month and Year 
+Funding Amount 
+Funding Status 
+
+8) Publication details 
+User can have multiple publications
+
+Publication Title 
+Publication Link 
+Publication Type 
+Publication Month and Year 
+
+9) Administrative position
+User can have multiple administrative positions 
+
+Position 
+From Year
+To Year 
+
+10) Honorary Positions
+User can have multiple Honorary positions 
+
+Honorary Position 
+Year 
+
+11) Conference Details
+User can have multiple Conference positions 
+
+Paper Title
+Conference Details 
+Conference Type 
+Conference ISBN
+Year 
+
+12) Phd Supervision 
+User can have multiple Phd Supervision
+
+Scholar Name 
+PhD Topic 
+Status 
+Year of Completion 
+
+13) Resource person details 
+User can have multiple Resource person details 
+
+Topic 
+Department 
+Date 
+
+14) Areas of Collaboration
+User can have multiple Areas of Collaboration
+
+Areas of Collaboration
+
+15) Areas of Consultancy
+User can have multiple Areas of Consultancy
+
+Areas of Consultancy

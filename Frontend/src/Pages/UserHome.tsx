@@ -7,9 +7,8 @@ import Footer from '../components/MainComponents/Footer.tsx';
 
 
 import UserAppAppBar from '../components/UserHome/UserAppAppBar.tsx';
-import DashboardHero from '../components/UserHome/UserHero.tsx';
-import ProfileStatsCard from '../components/UserHome/ProfileStatsCard.tsx';
-import ResearcherBadges from '../components/UserHome/ResearcherBadges.tsx';
+import FacultyDashboard from '../components/UserHome/FacultyDashboard.tsx';
+
 
 
 export default function UserHome(props: { disableCustomTheme?: boolean }) {
@@ -20,13 +19,12 @@ export default function UserHome(props: { disableCustomTheme?: boolean }) {
       <CssBaseline enableColorScheme />
 
       <UserAppAppBar/>
-     <DashboardHero/>
-     <ProfileStatsCard/>
+     
       <div>
      
-       <ResearcherBadges/>
+       
         
-
+<FacultyDashboard />
 
         <Footer />
       </div>

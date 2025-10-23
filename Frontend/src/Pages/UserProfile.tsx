@@ -7,9 +7,7 @@ import Footer from '../components/MainComponents/Footer.tsx';
 
 
 import UserAppAppBar from '../components/UserHome/UserAppAppBar.tsx';
-import UserProfileHeader from '../components/UserProfile/UserProfileDetails.tsx';
-import CareerResearchHighlights from '../components/UserProfile/CareerResearchHighlightsID.tsx';
-import EducationPublicationFunding from '../components/UserProfile/EducationPublicationFunding.tsx';
+import Profile from '../components/UserProfile/Profile.tsx';
 
 
 
@@ -23,10 +21,8 @@ export default function UserProfile(props: { disableCustomTheme?: boolean }) {
       <UserAppAppBar/>
     
       <div>
-       
-      <UserProfileHeader/>
-      <CareerResearchHighlights/>
-      <EducationPublicationFunding/>
+
+         <Profile />
         <Footer />
       </div>
     </AppTheme>

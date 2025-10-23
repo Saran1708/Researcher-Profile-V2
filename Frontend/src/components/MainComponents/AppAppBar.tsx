@@ -78,9 +78,7 @@ export default function AppAppBar() {
               <Button variant="text" color="info" size="small">
                 Search
               </Button>
-              <Button variant="text" color="info" size="small">
-                Blog
-              </Button>
+              
 
             </Box>
           </Box>
@@ -134,7 +132,7 @@ export default function AppAppBar() {
                 <MenuItem>Search</MenuItem>
 
 
-                <MenuItem>Blog</MenuItem>
+               
                 <Divider sx={{ my: 3 }} />
                 <MenuItem>
                   <Button color="primary" variant="contained" fullWidth
