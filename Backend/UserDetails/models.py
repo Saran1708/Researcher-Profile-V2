@@ -1,6 +1,6 @@
 from django.db import models
 from django.contrib.auth.models import AbstractBaseUser, BaseUserManager, PermissionsMixin
-
+from django.conf import settings
 
 # User Table
 
@@ -173,3 +173,34 @@ class Career_Highlight (models.Model):
 class Research_Career (models.Model):
     email=models.ForeignKey(User,on_delete=models.CASCADE,related_name="Research_Career")
     research_career_details = models.CharField(max_length=1000)
+
+
+class ProfileTracker(models.Model):
+    user = models.OneToOneField(
+        settings.AUTH_USER_MODEL,
+        on_delete=models.CASCADE,
+        related_name="profile_tracker"
+    )
+
+    # ✅ Mandatory Section Flags
+    profile_details_completed = models.BooleanField(default=False)
+    educational_details_completed = models.BooleanField(default=False)
+    research_career_completed = models.BooleanField(default=False)
+    career_highlights_completed = models.BooleanField(default=False)
+
+    last_updated = models.DateTimeField(auto_now=True)
+
+    def __str__(self):
+        return f"{self.user.email} - Profile Tracker"
+
+    @property
+    def is_profile_complete(self):
+        """
+        Returns True only when all mandatory sections are marked complete.
+        """
+        return all([
+            self.profile_details_completed,
+            self.educational_details_completed,
+            self.research_career_completed,
+            self.career_highlights_completed,
+        ])

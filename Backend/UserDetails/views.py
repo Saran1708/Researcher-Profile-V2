@@ -21,7 +21,8 @@ from .models import (
     Career_Highlight, 
     Research_Career,
     Collaboration, 
-    Consultancy
+    Consultancy,
+    ProfileTracker
 )
 
 from .serializers import (
@@ -71,6 +72,10 @@ def staff_details_view(request):
 
             if serializer.is_valid():
                 serializer.save()
+                tracker, _ = ProfileTracker.objects.get_or_create(user=user)
+                tracker.profile_details_completed = True
+                tracker.save()
+
                 return Response(serializer.data, status=status.HTTP_200_OK)
             return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
@@ -104,6 +109,10 @@ def education_view(request):
             
             if serializer.is_valid():
                 serializer.save()
+                tracker, _ = ProfileTracker.objects.get_or_create(user=user)
+                tracker.educational_details_completed = True
+                tracker.save()
+
                 return Response(serializer.data, status=status.HTTP_201_CREATED)
             return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
     
@@ -130,11 +139,17 @@ def education_detail_view(request, pk):
             
             if serializer.is_valid():
                 serializer.save()
+                tracker, _ = ProfileTracker.objects.get_or_create(user=user)
+                tracker.educational_details_completed = True
+                tracker.save()
                 return Response(serializer.data, status=status.HTTP_200_OK)
             return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
         
         elif request.method == 'DELETE':
             education.delete()
+            tracker, _ = ProfileTracker.objects.get_or_create(user=user)
+            tracker.educational_details_completed = False
+            tracker.save()
             return Response(status=status.HTTP_204_NO_CONTENT)
     
     except Exception as e:
@@ -778,6 +793,9 @@ def career_highlight_view(request):
         serializer = CareerHighlightSerializer(data=data)
         if serializer.is_valid():
             serializer.save()
+            tracker, _ = ProfileTracker.objects.get_or_create(user=user)
+            tracker.career_highlights_completed = True
+            tracker.save()
             return Response(serializer.data, status=201)
         return Response(serializer.errors, status=400)
 
@@ -797,10 +815,17 @@ def career_highlight_detail(request, pk):
         serializer = CareerHighlightSerializer(highlight, data=data, partial=True)
         if serializer.is_valid():
             serializer.save()
+            tracker, _ = ProfileTracker.objects.get_or_create(user=user)
+            tracker.career_highlights_completed = True
+            tracker.save()
+
             return Response(serializer.data, status=200)
         return Response(serializer.errors, status=400)
     elif request.method == 'DELETE':
         highlight.delete()
+        tracker, _ = ProfileTracker.objects.get_or_create(user=user)
+        tracker.career_highlights_completed = False
+        tracker.save()
         return Response(status=204)
 
 
@@ -824,6 +849,10 @@ def research_career_view(request):
         serializer = ResearchCareerSerializer(data=data)
         if serializer.is_valid():
             serializer.save()
+            tracker, _ = ProfileTracker.objects.get_or_create(user=user)
+            tracker.research_career_completed = True
+            tracker.save()
+
             return Response(serializer.data, status=201)
         return Response(serializer.errors, status=400)
 
@@ -843,8 +872,31 @@ def research_career_detail(request, pk):
         serializer = ResearchCareerSerializer(research_career, data=data, partial=True)
         if serializer.is_valid():
             serializer.save()
+            tracker, _ = ProfileTracker.objects.get_or_create(user=user)
+            tracker.research_career_completed = True
+            tracker.save()
             return Response(serializer.data, status=200)
         return Response(serializer.errors, status=400)
     elif request.method == 'DELETE':
         research_career.delete()
+        tracker, _ = ProfileTracker.objects.get_or_create(user=user)
+        tracker.research_career_completed = False
+        tracker.save()
         return Response(status=204)
+
+
+@api_view(['GET'])
+@permission_classes([IsAuthenticated])
+def profile_completion_status(request):
+    user = request.user
+    tracker, _ = ProfileTracker.objects.get_or_create(user=user)
+
+    data = {
+        "profile_details_completed": tracker.profile_details_completed,
+        "educational_details_completed": tracker.educational_details_completed,
+        "research_career_completed": tracker.research_career_completed,
+        "career_highlights_completed": tracker.career_highlights_completed,
+        "is_profile_complete": tracker.is_profile_complete,
+    }
+
+    return Response(data, status=status.HTTP_200_OK)

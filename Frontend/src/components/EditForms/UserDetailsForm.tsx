@@ -1,6 +1,7 @@
 
 import React, { useState, useCallback, useEffect } from 'react';
 import axiosClient from '../../utils/axiosClient';
+import  Chip  from "@mui/material/Chip";
 import {
   Accordion,
   AccordionSummary,
@@ -300,8 +301,22 @@ const UserDetailsForm = () => {
             <Stack direction="row" alignItems="center" spacing={1}>
               <PersonIcon />
               <Typography fontWeight={600}>Profile Details</Typography>
+              <Chip
+                label="Mandatory"
+                size="small"
+                color="warning"
+                sx={{
+                  ml: 1,
+                  height: 22,
+                  fontWeight: 600,
+                  fontSize: 12,
+                  bgcolor: "warning.light",
+                  color: "warning.dark",
+                }}
+              />
             </Stack>
           </AccordionSummary>
+
 
           <AccordionDetails>
             {fetchError ? (
@@ -314,7 +329,7 @@ const UserDetailsForm = () => {
                 <Typography color="error" align="center" sx={{ py: 2 }}>
                   Error fetching your details.
                 </Typography>
-                
+
               </Box>
             ) : (
               <Stack spacing={3}>
@@ -473,7 +488,7 @@ const UserDetailsForm = () => {
                   {loading ? 'Saving...' : 'Save Profile Details'}
                 </Button>
               </Stack>
-               )}
+            )}
           </AccordionDetails>
         </Accordion>
 

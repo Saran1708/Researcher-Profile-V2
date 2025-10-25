@@ -1,17 +1,9 @@
 import * as React from 'react';
 import Box from '@mui/material/Box';
-import Button from '@mui/material/Button';
 import Container from '@mui/material/Container';
-import InputLabel from '@mui/material/InputLabel';
-import Link from '@mui/material/Link';
 import Stack from '@mui/material/Stack';
-import TextField from '@mui/material/TextField';
 import Typography from '@mui/material/Typography';
-import visuallyHidden from '@mui/utils/visuallyHidden';
 import { styled } from '@mui/material/styles';
-
-// If your video is in the public/videos folder, use: /videos/yourvideo.mp4
-const VIDEO_SRC = 'https://drive.google.com/file/d/1Yhp5gQEpMP-UyjvrrTnrK4pDad5JcFeP/view?usp=sharing'; // Adjust path accordingly
 
 const StyledBox = styled('div')(({ theme }) => ({
   alignSelf: 'center',
@@ -26,6 +18,15 @@ const StyledBox = styled('div')(({ theme }) => ({
   [theme.breakpoints.up('sm')]: {
     marginTop: theme.spacing(10),
     height: 700,
+  },
+}));
+
+const List = styled('ul')(({ theme }) => ({
+  paddingLeft: theme.spacing(3),
+  marginTop: theme.spacing(2),
+  marginBottom: theme.spacing(2),
+  '& li': {
+    marginBottom: theme.spacing(1.5),
   },
 }));
 
@@ -50,44 +51,41 @@ export default function EditHero() {
           flexDirection: 'column',
           alignItems: 'center',
           pt: { xs: 14, sm: 20 },
-         
         }}
       >
         <Stack
-          spacing={2}
+          spacing={3}
           useFlexGap
           sx={{ alignItems: 'center', width: { xs: '100%', sm: '70%' } }}
         >
-          
           <Typography
+            variant="h4"
             sx={{
               textAlign: 'center',
-              color: 'text.secondary',
+              color: 'text.primary',
+              fontWeight: 500,
               width: { sm: '100%', md: '80%' },
             }}
           >
-          Welcome to the place where you can add, update, and manage your research details. Keeping your profile current helps enhance your professional visibility within the institution and beyond.
-        <br /><br />
-        This platform is structured to provide a comprehensive overview of faculty research interests, areas of expertise, publications, and projects. Keep your details up-to-date to foster collaborations and highlight your contributions.
-          </Typography><br></br>
-
-
-          <Typography
-            variant="h1"
-            sx={{
-              display: 'flex',
-              flexDirection: { xs: 'column', sm: 'row' },
-              alignItems: 'center',
-              fontSize: 'clamp(1.2rem, 10vw, 1rem)',
-            }}
-          >
-            Researcher&nbsp;
-            
+            Welcome! This page allows you to add, update, and manage your research details.
           </Typography>
+
+          
+
+          <List>
+            <li>
+              <strong>Mandatory fields</strong> must be filled to activate your dashboard and complete your profile.
+            </li>
+            <li>
+              Each section of this page is an <strong>individual form</strong>. Make sure to save each form separately; otherwise, your data may be unsaved.
+            </li>
+            <li>
+              Regularly updating your information helps keep your profile accurate and improves visibility for collaborations and professional recognition.
+            </li>
+          </List>
+
           
         </Stack>
-
-        
       </Container>
     </Box>
   );

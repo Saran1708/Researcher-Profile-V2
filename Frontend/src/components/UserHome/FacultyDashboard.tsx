@@ -1,9 +1,13 @@
 import * as React from "react";
+import { useEffect, useState } from "react";
 import { alpha, styled } from "@mui/material/styles";
 import Box from "@mui/material/Box";
 import Typography from "@mui/material/Typography";
 import Paper from "@mui/material/Paper";
 import Avatar from "@mui/material/Avatar";
+import Button from "@mui/material/Button";
+import CircularProgress from "@mui/material/CircularProgress";
+import ErrorOutlineIcon from "@mui/icons-material/ErrorOutline";
 import VisibilityIcon from "@mui/icons-material/Visibility";
 import TrendingUpIcon from "@mui/icons-material/TrendingUp";
 import EmojiEventsIcon from "@mui/icons-material/EmojiEvents";
@@ -14,24 +18,53 @@ import GroupIcon from "@mui/icons-material/Group";
 import WorkIcon from "@mui/icons-material/Work";
 import PersonIcon from "@mui/icons-material/Person";
 import AssignmentIcon from "@mui/icons-material/Assignment";
+import BiotechIcon from "@mui/icons-material/Biotech";
+import MenuBookIcon from "@mui/icons-material/MenuBook";
+import HandshakeIcon from "@mui/icons-material/Handshake";
+import BusinessCenterIcon from "@mui/icons-material/BusinessCenter";
+import axiosClient from '../../utils/axiosClient';
+import ResearchLoader from "../MainComponents/Loader";
 
-const MainCard = styled(Paper)(({ theme }) => ({
-  maxWidth: "1150px",
-  margin: "0 auto",
-  marginTop: theme.spacing(18),
+const API_BASE_URL = import.meta.env.VITE_API_URL;
 
-  padding: theme.spacing(4),
-  position: "relative",
-  
-borderRadius: `calc(${theme.shape.borderRadius}px + 8px)`,
-  backdropFilter: 'blur(24px)',
-  border: '1px solid',
+const IncompleteCard = styled(Paper)(({ theme }) => ({
+  display: "flex",
+  flexDirection: "column",
+  alignItems: "center",
+  justifyContent: "center",
+  flexShrink: 0,
+  borderRadius: `calc(${theme.shape.borderRadius}px + 8px)`,
+  backdropFilter: "blur(24px)",
+  border: "1px solid",
   borderColor: (theme.vars || theme).palette.divider,
   backgroundColor: theme.vars
     ? `rgba(${theme.vars.palette.background.defaultChannel} / 0.4)`
     : alpha(theme.palette.background.default, 0.4),
   boxShadow: (theme.vars || theme).shadows[1],
- 
+  padding: "32px 24px",
+  maxWidth: 480,
+  width: "100%",
+  textAlign: "center",
+  [theme.breakpoints.down("sm")]: {
+    padding: "24px 16px",
+    margin: "0 12px",
+  },
+}));
+
+const MainCard = styled(Paper)(({ theme }) => ({
+  maxWidth: "1150px",
+  margin: "0 auto",
+  marginTop: theme.spacing(18),
+  padding: theme.spacing(4),
+  position: "relative",
+  borderRadius: `calc(${theme.shape.borderRadius}px + 8px)`,
+  backdropFilter: "blur(24px)",
+  border: "1px solid",
+  borderColor: (theme.vars || theme).palette.divider,
+  backgroundColor: theme.vars
+    ? `rgba(${theme.vars.palette.background.defaultChannel} / 0.4)`
+    : alpha(theme.palette.background.default, 0.4),
+  boxShadow: (theme.vars || theme).shadows[1],
 }));
 
 const StatsCard = styled(Box)(({ theme }) => ({
@@ -50,24 +83,28 @@ const StatsCard = styled(Box)(({ theme }) => ({
   }),
 }));
 
-const RankingCard = styled(Box)(({ theme }) => ({
-  padding: theme.spacing(3),
-  borderRadius: "8px",
-  border: "1px solid",
-  borderColor: theme.palette.divider,
-  height: "100%",
-  ...(theme.palette.mode === "dark" && {
-    backgroundColor: theme.palette.grey[900],
-  }),
-}));
-
 export default function Dashboard() {
-  const userData = {
-    name: "Dr. Rajesh Kumar",
-    department: "Computer Science and Engineering",
-    profilePic: "https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?w=400",
-  };
+  const [profileStatus, setProfileStatus] = useState(null);
+  const [loading, setLoading] = useState(true);
+  const [userData, setUserData] = useState(null);
+  const [dashboardStats, setDashboardStats] = useState({
+    educations: 0,
+    researchAreas: 0,
+    researchIDs: 0,
+    publications: 0,
+    fundings: 0,
+    conferences: 0,
+    phdSupervisions: 0,
+    adminPositions: 0,
+    honoraryPositions: 0,
+    resourcePerson: 0,
+    collaborations: 0,
+    consultancies: 0,
+    careerHighlights: 0,
+    researchCareer: 0,
+  });
 
+  // Mock data for profile views (as you mentioned)
   const profileViews = {
     total: 2458,
     weekly: 187,
@@ -76,35 +113,189 @@ export default function Dashboard() {
     monthlyGrowth: 8.3,
   };
 
-  const profileStats = {
-    publications: 45,
-    fundings: 8,
-    phdSupervisions: 12,
-    conferences: 28,
-    adminPositions: 5,
-    honoraryPositions: 7,
-    resourcePerson: 15,
-    collaborations: 6,
+  useEffect(() => {
+    fetchAllData();
+  }, []);
+
+  const fetchAllData = async () => {
+    try {
+      setLoading(true);
+      const token = localStorage.getItem('access_token');
+      const headers = { Authorization: `Bearer ${token}` };
+
+      // Fetch profile status and all data in parallel
+      const [
+        statusRes,
+        staffRes,
+        educationRes,
+        researchRes,
+        researchIdRes,
+        publicationRes,
+        fundingRes,
+        conferenceRes,
+        phdRes,
+        adminRes,
+        honoraryRes,
+        resourceRes,
+        collaborationRes,
+        consultancyRes,
+        careerHighlightRes,
+        researchCareerRes
+      ] = await Promise.all([
+        axiosClient.get(`${API_BASE_URL}/profile/status/`, { headers }),
+        axiosClient.get(`${API_BASE_URL}/staff-details/`, { headers }).catch(() => ({ data: null })),
+        axiosClient.get(`${API_BASE_URL}/education/`, { headers }).catch(() => ({ data: [] })),
+        axiosClient.get(`${API_BASE_URL}/research/`, { headers }).catch(() => ({ data: [] })),
+        axiosClient.get(`${API_BASE_URL}/research-id/`, { headers }).catch(() => ({ data: [] })),
+        axiosClient.get(`${API_BASE_URL}/publication/`, { headers }).catch(() => ({ data: [] })),
+        axiosClient.get(`${API_BASE_URL}/funding/`, { headers }).catch(() => ({ data: [] })),
+        axiosClient.get(`${API_BASE_URL}/conference/`, { headers }).catch(() => ({ data: [] })),
+        axiosClient.get(`${API_BASE_URL}/phd/`, { headers }).catch(() => ({ data: [] })),
+        axiosClient.get(`${API_BASE_URL}/administration-position/`, { headers }).catch(() => ({ data: [] })),
+        axiosClient.get(`${API_BASE_URL}/honary-position/`, { headers }).catch(() => ({ data: [] })),
+        axiosClient.get(`${API_BASE_URL}/resource-person/`, { headers }).catch(() => ({ data: [] })),
+        axiosClient.get(`${API_BASE_URL}/collaboration/`, { headers }).catch(() => ({ data: [] })),
+        axiosClient.get(`${API_BASE_URL}/consultancy/`, { headers }).catch(() => ({ data: [] })),
+        axiosClient.get(`${API_BASE_URL}/career-highlight/`, { headers }).catch(() => ({ data: [] })),
+        axiosClient.get(`${API_BASE_URL}/research-career/`, { headers }).catch(() => ({ data: [] }))
+      ]);
+
+      setProfileStatus(statusRes.data);
+
+      // If profile is incomplete, stop here
+      if (!statusRes.data.is_profile_complete) {
+        setLoading(false);
+        return;
+      }
+
+      // Set user data
+      if (staffRes.data) {
+        let profilePicUrl = staffRes.data.profile_picture || '';
+        if (profilePicUrl && !profilePicUrl.startsWith('http')) {
+          if (!profilePicUrl.startsWith('/')) {
+            profilePicUrl = '/' + profilePicUrl;
+          }
+          profilePicUrl = import.meta.env.VITE_BASE_URL + profilePicUrl;
+        }
+
+        setUserData({
+          name: `${staffRes.data.prefix || ''} ${staffRes.data.name || ''}`.trim(),
+          department: staffRes.data.department || '',
+          profilePic: profilePicUrl,
+        });
+      }
+
+      // Set statistics
+      setDashboardStats({
+        educations: educationRes.data?.length || 0,
+        researchAreas: researchRes.data?.length || 0,
+        researchIDs: researchIdRes.data?.length || 0,
+        publications: publicationRes.data?.length || 0,
+        fundings: fundingRes.data?.length || 0,
+        conferences: conferenceRes.data?.length || 0,
+        phdSupervisions: phdRes.data?.length || 0,
+        adminPositions: adminRes.data?.length || 0,
+        honoraryPositions: honoraryRes.data?.length || 0,
+        resourcePerson: resourceRes.data?.length || 0,
+        collaborations: collaborationRes.data?.length || 0,
+        consultancies: consultancyRes.data?.length || 0,
+        careerHighlights: careerHighlightRes.data?.length || 0,
+        researchCareer: researchCareerRes.data?.length || 0,
+      });
+
+      setLoading(false);
+    } catch (error) {
+      console.error("Error fetching dashboard data:", error);
+      setLoading(false);
+    }
   };
 
-  const totalPoints = 1655;
+  if (loading) {
+    return (
+      <Box
+        sx={{
+          minHeight: "100vh",
+          display: "flex",
+          alignItems: "center",
+          justifyContent: "center",
+        }}
+      >
+       <ResearchLoader />
+      </Box>
+    );
+  }
 
-  const rankings = {
-    department: {
-      rank: 3,
-      total: 45,
-      department: "Computer Science and Engineering",
-    },
-    stream: {
-      rank: 8,
-      total: 120,
-      stream: "Aided",
-    },
-    overall: {
-      rank: 15,
-      total: 450,
-    },
-  };
+  if (!profileStatus?.is_profile_complete) {
+    return (
+      <Box
+        sx={{
+          minHeight: "100vh",
+          display: "flex",
+          alignItems: "center",
+          justifyContent: "center",
+          bgcolor: "background.default",
+          p: 2,
+        }}
+      >
+        <IncompleteCard sx={{ maxWidth: 520, textAlign: "left", p: 4 }}>
+          <Box sx={{ display: "flex", alignItems: "center", mb: 2 }}>
+            <ErrorOutlineIcon sx={{ fontSize: 48, color: "error.main", mr: 2 }} />
+            <Typography variant="h5" fontWeight={700}>
+              Your Profile Setup is Incomplete
+            </Typography>
+          </Box>
+
+          <Typography variant="body1" color="text.secondary" sx={{ mb: 3 }}>
+            To access your personalized dashboard and analytics, please complete
+            the following sections:
+          </Typography>
+
+          <Box sx={{ display: "flex", flexWrap: "wrap", gap: 1.5, mb: 3 }}>
+            {[
+              "Staff Details",
+              "Education Details",
+              "Career Highlights",
+              "Research Career",
+            ].map((item, i) => (
+              <Box
+                key={i}
+                sx={{
+                  px: 3,
+                  py: 1,
+                  borderRadius: 2,
+                  bgcolor: "rgba(25, 118, 210, 0.08)",
+                  color: "primary.main",
+                  fontWeight: 600,
+                  fontSize: 14,
+                  display: "flex",
+                  alignItems: "center",
+                  gap: 1,
+                }}
+              >
+                <AssignmentIcon sx={{ fontSize: 18 }} />
+                {item}
+              </Box>
+            ))}
+          </Box>
+
+          <Typography variant="body2" color="text.secondary" sx={{ mb: 3 }}>
+            Once all required sections are filled, your profile will be reviewed
+            and unlocked for dashboard access.
+          </Typography>
+
+          <Button
+            variant="contained"
+            color="primary"
+            fullWidth
+            sx={{ fontWeight: 600, py: 1.2, borderRadius: 2 }}
+            onClick={() => (window.location.href = "/edit")}
+          >
+            Go to Edit Profile
+          </Button>
+        </IncompleteCard>
+      </Box>
+    );
+  }
 
   return (
     <Box sx={{ minHeight: "100vh", backgroundColor: "background.default", pb: 6 }}>
@@ -114,7 +305,7 @@ export default function Dashboard() {
           <Box sx={{ mb: 5 }}>
             <Box sx={{ display: "flex", alignItems: "center", gap: 3, mb: 2 }}>
               <Avatar
-                src={userData.profilePic}
+                src={userData?.profilePic}
                 sx={{
                   width: 80,
                   height: 80,
@@ -122,13 +313,15 @@ export default function Dashboard() {
                   borderColor: "primary.main",
                   boxShadow: 3,
                 }}
-              />
+              >
+                {!userData?.profilePic && <PersonIcon sx={{ fontSize: 40 }} />}
+              </Avatar>
               <Box>
                 <Typography variant="h4" fontWeight={700} mb={0.5}>
-                  Welcome back, {userData.name.split(' ').slice(1).join(' ')}!
+                  Welcome back, {userData?.name?.split(' ').slice(1).join(' ')}!
                 </Typography>
                 <Typography variant="body1" color="text.secondary">
-                  {userData.department}
+                  {userData?.department}
                 </Typography>
               </Box>
             </Box>
@@ -136,7 +329,7 @@ export default function Dashboard() {
 
           <Box sx={{ borderBottom: "1px solid", borderColor: "divider", mb: 4 }} />
 
-          {/* Profile Views Section */}
+          {/* Profile Views Section (Mock Data) */}
           <Box mb={5}>
             <Typography variant="h6" fontWeight={700} mb={3}>
               Profile Analytics
@@ -199,12 +392,48 @@ export default function Dashboard() {
             </Box>
           </Box>
 
-          {/* Main Stats Grid */}
+          {/* Academic & Research Stats (Real Data) */}
           <Box mb={5}>
             <Typography variant="h6" fontWeight={700} mb={3}>
-              Overview
+              Academic & Research Overview
             </Typography>
             <Box sx={{ display: "grid", gridTemplateColumns: { xs: "1fr", sm: "repeat(2, 1fr)", lg: "repeat(4, 1fr)" }, gap: 3 }}>
+              <StatsCard>
+                <Box sx={{ display: "flex", alignItems: "center", mb: 2 }}>
+                  <MenuBookIcon sx={{ fontSize: 20, color: "primary.main", mr: 1.5 }} />
+                  <Typography variant="body2" color="text.secondary" fontWeight={600}>
+                    Education
+                  </Typography>
+                </Box>
+                <Typography variant="h4" fontWeight={700}>
+                  {dashboardStats.educations}
+                </Typography>
+              </StatsCard>
+
+              <StatsCard>
+                <Box sx={{ display: "flex", alignItems: "center", mb: 2 }}>
+                  <BiotechIcon sx={{ fontSize: 20, color: "secondary.main", mr: 1.5 }} />
+                  <Typography variant="body2" color="text.secondary" fontWeight={600}>
+                    Research Areas
+                  </Typography>
+                </Box>
+                <Typography variant="h4" fontWeight={700}>
+                  {dashboardStats.researchAreas}
+                </Typography>
+              </StatsCard>
+
+              <StatsCard>
+                <Box sx={{ display: "flex", alignItems: "center", mb: 2 }}>
+                  <AssignmentIcon sx={{ fontSize: 20, color: "info.main", mr: 1.5 }} />
+                  <Typography variant="body2" color="text.secondary" fontWeight={600}>
+                    Research IDs
+                  </Typography>
+                </Box>
+                <Typography variant="h4" fontWeight={700}>
+                  {dashboardStats.researchIDs}
+                </Typography>
+              </StatsCard>
+
               <StatsCard>
                 <Box sx={{ display: "flex", alignItems: "center", mb: 2 }}>
                   <ArticleIcon sx={{ fontSize: 20, color: "primary.main", mr: 1.5 }} />
@@ -213,7 +442,7 @@ export default function Dashboard() {
                   </Typography>
                 </Box>
                 <Typography variant="h4" fontWeight={700}>
-                  {profileStats.publications}
+                  {dashboardStats.publications}
                 </Typography>
               </StatsCard>
 
@@ -225,19 +454,7 @@ export default function Dashboard() {
                   </Typography>
                 </Box>
                 <Typography variant="h4" fontWeight={700}>
-                  {profileStats.fundings}
-                </Typography>
-              </StatsCard>
-
-              <StatsCard>
-                <Box sx={{ display: "flex", alignItems: "center", mb: 2 }}>
-                  <SchoolIcon sx={{ fontSize: 20, color: "info.main", mr: 1.5 }} />
-                  <Typography variant="body2" color="text.secondary" fontWeight={600}>
-                    PhD Supervisions
-                  </Typography>
-                </Box>
-                <Typography variant="h4" fontWeight={700}>
-                  {profileStats.phdSupervisions}
+                  {dashboardStats.fundings}
                 </Typography>
               </StatsCard>
 
@@ -249,10 +466,31 @@ export default function Dashboard() {
                   </Typography>
                 </Box>
                 <Typography variant="h4" fontWeight={700}>
-                  {profileStats.conferences}
+                  {dashboardStats.conferences}
                 </Typography>
               </StatsCard>
 
+              <StatsCard>
+                <Box sx={{ display: "flex", alignItems: "center", mb: 2 }}>
+                  <SchoolIcon sx={{ fontSize: 20, color: "info.main", mr: 1.5 }} />
+                  <Typography variant="body2" color="text.secondary" fontWeight={600}>
+                    PhD Supervisions
+                  </Typography>
+                </Box>
+                <Typography variant="h4" fontWeight={700}>
+                  {dashboardStats.phdSupervisions}
+                </Typography>
+              </StatsCard>
+
+            </Box>
+          </Box>
+
+          {/* Professional Activities (Real Data) */}
+          <Box mb={5}>
+            <Typography variant="h6" fontWeight={700} mb={3}>
+              Professional Activities
+            </Typography>
+            <Box sx={{ display: "grid", gridTemplateColumns: { xs: "1fr", sm: "repeat(2, 1fr)", lg: "repeat(3, 1fr)" }, gap: 3 }}>
               <StatsCard>
                 <Box sx={{ display: "flex", alignItems: "center", mb: 2 }}>
                   <WorkIcon sx={{ fontSize: 20, color: "error.main", mr: 1.5 }} />
@@ -261,7 +499,7 @@ export default function Dashboard() {
                   </Typography>
                 </Box>
                 <Typography variant="h4" fontWeight={700}>
-                  {profileStats.adminPositions}
+                  {dashboardStats.adminPositions}
                 </Typography>
               </StatsCard>
 
@@ -273,7 +511,7 @@ export default function Dashboard() {
                   </Typography>
                 </Box>
                 <Typography variant="h4" fontWeight={700}>
-                  {profileStats.honoraryPositions}
+                  {dashboardStats.honoraryPositions}
                 </Typography>
               </StatsCard>
 
@@ -285,138 +523,129 @@ export default function Dashboard() {
                   </Typography>
                 </Box>
                 <Typography variant="h4" fontWeight={700}>
-                  {profileStats.resourcePerson}
+                  {dashboardStats.resourcePerson}
                 </Typography>
               </StatsCard>
 
               <StatsCard>
                 <Box sx={{ display: "flex", alignItems: "center", mb: 2 }}>
-                  <AssignmentIcon sx={{ fontSize: 20, color: "success.main", mr: 1.5 }} />
+                  <HandshakeIcon sx={{ fontSize: 20, color: "success.main", mr: 1.5 }} />
                   <Typography variant="body2" color="text.secondary" fontWeight={600}>
                     Collaborations
                   </Typography>
                 </Box>
                 <Typography variant="h4" fontWeight={700}>
-                  {profileStats.collaborations}
+                  {dashboardStats.collaborations}
+                </Typography>
+              </StatsCard>
+
+              <StatsCard>
+                <Box sx={{ display: "flex", alignItems: "center", mb: 2 }}>
+                  <BusinessCenterIcon sx={{ fontSize: 20, color: "info.main", mr: 1.5 }} />
+                  <Typography variant="body2" color="text.secondary" fontWeight={600}>
+                    Consultancies
+                  </Typography>
+                </Box>
+                <Typography variant="h4" fontWeight={700}>
+                  {dashboardStats.consultancies}
                 </Typography>
               </StatsCard>
             </Box>
           </Box>
 
-          {/* Points and Rankings Section */}
-         <Box>
-  <Typography variant="h6" fontWeight={700} mb={3}>
-    Performance & Rankings
-  </Typography>
-
-  <Box
-    sx={{
-      display: "grid",
-      gridTemplateColumns: { xs: "1fr", md: "1.2fr 1fr" }, // slightly smaller left card
-      gap: 3,
-      alignItems: "stretch",
-    }}
-  >
-    {/* Total Points Card */}
-    <StatsCard
-      sx={{
-        background: "linear-gradient(135deg, #667eea 0%, #764ba2 100%)",
-        borderColor: "transparent",
-        "&:hover": { borderColor: "transparent" },
-        display: "flex",
-        flexDirection: "column",
-        alignItems: "center", 
-        justifyContent: "center",
-        textAlign: "center",  
-        p: 3,
-        borderRadius: 3,
-        height: "100%",
-        minHeight: 180, // reduces tall empty space
-      }}
-    >
-      <Box sx={{ display: "flex", alignItems: "center", mb: 1 }}>
-        <EmojiEventsIcon sx={{ fontSize: 30, color: "white", mr: 1.2 }} />
-        <Typography variant="subtitle1" fontWeight={700} sx={{ color: "white" }}>
-          Total Points
-        </Typography>
-      </Box>
-
-      <Typography
-        variant="h3"
-        fontWeight={800}
-        sx={{ color: "white", lineHeight: 1.1, mb: 0.5 }}
-      >
-        {totalPoints.toLocaleString()}
-      </Typography>
-
-      <Typography
-        variant="body2"
-        sx={{ color: "rgba(255,255,255,0.85)", mt: 0.5 }}
-      >
-        Based on your academic contributions
-      </Typography>
-    </StatsCard>
-
-    {/* Rankings Column */}
-    <Box
-      sx={{
-        display: "flex",
-        flexDirection: "column",
-        gap: 2,
-        height: "100%",
-      }}
-    >
-      {[
-        {
-          label: "Department Rank",
-          color: "primary.main",
-          value: `#${rankings.department.rank}`,
-          total: rankings.department.total,
-        },
-        {
-          label: `${rankings.stream.stream} Stream Rank`,
-          color: "info.main",
-          value: `#${rankings.stream.rank}`,
-          total: rankings.stream.total,
-        },
-        {
-          label: "Overall University Rank",
-          color: "success.main",
-          value: `#${rankings.overall.rank}`,
-          total: rankings.overall.total,
-        },
-      ].map((rank, i) => (
-        <RankingCard key={i} sx={{ p: 2, borderRadius: 3 }}>
-          <Box
-            sx={{
-              display: "flex",
-              justifyContent: "space-between",
-              alignItems: "center",
-            }}
-          >
-            <Box>
-              <Typography
-                variant="caption"
-                color="text.secondary"
-                fontWeight={600}
-                sx={{ textTransform: "uppercase" }}
-              >
-                {rank.label}
-              </Typography>
-              <Typography variant="h5" fontWeight={700} color={rank.color}>
-                {rank.value}
-              </Typography>
-            </Box>
-            <Typography variant="body2" color="text.secondary">
-              of {rank.total}
+          {/* Visual Progress Bars */}
+          <Box>
+            <Typography variant="h6" fontWeight={700} mb={3}>
+              Activity Distribution
             </Typography>
-          </Box>
-        </RankingCard>
-      ))}
-    </Box>
-  </Box>
-</Box>
+            <Box sx={{ display: "grid", gridTemplateColumns: { xs: "1fr", md: "1fr 1fr" }, gap: 4 }}>
+              {/* Research Contributions */}
+              <Box sx={{ p: 3, border: "1px solid", borderColor: "divider", borderRadius: 2 }}>
+                <Typography variant="subtitle1" fontWeight={600} mb={3}>
+                  Research Contributions
+                </Typography>
+                {[
+                  { label: "Publications", value: dashboardStats.publications, color: "primary.main", max: 50 },
+                  { label: "Research Areas", value: dashboardStats.researchAreas, color: "secondary.main", max: 20 },
+                  { label: "Funding Projects", value: dashboardStats.fundings, color: "success.main", max: 15 },
+                  { label: "Conferences", value: dashboardStats.conferences, color: "warning.main", max: 30 },
+                ].map((item, i) => (
+                  <Box key={i} sx={{ mb: 2.5 }}>
+                    <Box sx={{ display: "flex", justifyContent: "space-between", mb: 0.5 }}>
+                      <Typography variant="body2" fontWeight={500}>
+                        {item.label}
+                      </Typography>
+                      <Typography variant="body2" fontWeight={700} color={item.color}>
+                        {item.value}
+                      </Typography>
+                    </Box>
+                    <Box
+                      sx={{
+                        width: "100%",
+                        height: 8,
+                        bgcolor: "grey.200",
+                        borderRadius: 1,
+                        overflow: "hidden",
+                      }}
+                    >
+                      <Box
+                        sx={{
+                          width: `${Math.min((item.value / item.max) * 100, 100)}%`,
+                          height: "100%",
+                          bgcolor: item.color,
+                          borderRadius: 1,
+                          transition: "width 1s ease",
+                        }}
+                      />
+                    </Box>
+                  </Box>
+                ))}
+              </Box>
 
+              {/* Academic Leadership */}
+              <Box sx={{ p: 3, border: "1px solid", borderColor: "divider", borderRadius: 2 }}>
+                <Typography variant="subtitle1" fontWeight={600} mb={3}>
+                  Academic Leadership
+                </Typography>
+                {[
+                  { label: "PhD Supervisions", value: dashboardStats.phdSupervisions, color: "info.main", max: 20 },
+                  { label: "Admin Positions", value: dashboardStats.adminPositions, color: "error.main", max: 10 },
+                  { label: "Honorary Positions", value: dashboardStats.honoraryPositions, color: "secondary.main", max: 10 },
+                  { label: "Resource Person", value: dashboardStats.resourcePerson, color: "primary.main", max: 25 },
+                ].map((item, i) => (
+                  <Box key={i} sx={{ mb: 2.5 }}>
+                    <Box sx={{ display: "flex", justifyContent: "space-between", mb: 0.5 }}>
+                      <Typography variant="body2" fontWeight={500}>
+                        {item.label}
+                      </Typography>
+                      <Typography variant="body2" fontWeight={700} color={item.color}>
+                        {item.value}
+                      </Typography>
+                    </Box>
+                    <Box
+                      sx={{
+                        width: "100%",
+                        height: 8,
+                        bgcolor: "grey.200",
+                        borderRadius: 1,
+                        overflow: "hidden",
+                      }}
+                    >
+                      <Box
+                        sx={{
+                          width: `${Math.min((item.value / item.max) * 100, 100)}%`,
+                          height: "100%",
+                          bgcolor: item.color,
+                          borderRadius: 1,
+                          transition: "width 1s ease",
+                        }}
+                      />
+                    </Box>
+                  </Box>
+                ))}
+              </Box>
+            </Box>
+          </Box>
         </MainCard>
       </Box>
     </Box>

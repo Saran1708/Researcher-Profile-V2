@@ -87,8 +87,8 @@ export default function ResetPassword(props: { disableCustomTheme?: boolean }) {
             // Optionally update localStorage so user doesn't get blocked again
             localStorage.setItem('password_changed', 'true');
 
-            // Navigate to edit page - loading will continue until new page loads
-            navigate('/edit');
+            // Navigate to home  page - loading will continue until new page loads
+            navigate('/home');
         } catch (err) {
             setPasswordError(true);
             setPasswordErrorMessage('Failed to reset password.');

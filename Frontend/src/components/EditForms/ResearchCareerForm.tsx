@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import axiosClient from '../../utils/axiosClient';
+import  Chip  from "@mui/material/Chip";
 import {
   Accordion,
   AccordionSummary,
@@ -146,11 +147,25 @@ const ResearchCareerForm = () => {
       <Container maxWidth="md">
         <Accordion>
           <AccordionSummary expandIcon={<ExpandMoreIcon />}>
-            <Stack direction="row" alignItems="center" spacing={1}>
-              <ScienceIcon />
-              <Typography fontWeight={600}>Research Career</Typography>
-            </Stack>
-          </AccordionSummary>
+  <Stack direction="row" alignItems="center" spacing={1}>
+    <ScienceIcon />
+    <Typography fontWeight={600}>Research Career</Typography>
+    <Chip
+      label="Mandatory"
+      size="small"
+      color="warning"
+      sx={{
+        ml: 1,
+        height: 22,
+        fontWeight: 600,
+        fontSize: 12,
+        bgcolor: "warning.light",
+        color: "warning.dark",
+      }}
+    />
+  </Stack>
+</AccordionSummary>
+
           <AccordionDetails>
             {fetchError ? (
               <Typography color="error" align="center" sx={{ py: 2 }}>

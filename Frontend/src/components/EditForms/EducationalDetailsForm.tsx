@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import axiosClient from '../../utils/axiosClient';
+import Chip from "@mui/material/Chip";
 import {
   Accordion,
   AccordionSummary,
@@ -156,7 +157,7 @@ const EducationDetailsForm = () => {
               'Content-Type': 'multipart/form-data'
             }
           });
-          
+
           // Update the education with the returned ID
           edu.id = response.data.id;
         }
@@ -182,7 +183,7 @@ const EducationDetailsForm = () => {
     if (educations.length === 1) return; // Prevent removing last
 
     const eduToDelete = educations[index];
-    
+
     // If the education has an ID, delete it from the database
     if (eduToDelete.id) {
       setLoading(true); // Add loading state for delete
@@ -231,8 +232,22 @@ const EducationDetailsForm = () => {
             <Stack direction="row" alignItems="center" spacing={1}>
               <SchoolIcon />
               <Typography fontWeight={600}>Education Details</Typography>
+              <Chip
+                label="Mandatory"
+                size="small"
+                color="warning"
+                sx={{
+                  ml: 1,
+                  height: 22,
+                  fontWeight: 600,
+                  fontSize: 12,
+                  bgcolor: "warning.light",
+                  color: "warning.dark",
+                }}
+              />
             </Stack>
           </AccordionSummary>
+
 
           <AccordionDetails>
             {fetchError ? (

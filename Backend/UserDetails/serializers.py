@@ -25,9 +25,13 @@ class UserSerializer(serializers.ModelSerializer):
 
 
 class StaffDetailsSerializer(serializers.ModelSerializer):
+    email_value = serializers.SerializerMethodField()
     class Meta:
         model = Staff_Details
         fields = '__all__'
+
+    def get_email_value(self, obj):
+        return obj.email.email if obj.email else None
 
 
 class EducationSerializer(serializers.ModelSerializer):
