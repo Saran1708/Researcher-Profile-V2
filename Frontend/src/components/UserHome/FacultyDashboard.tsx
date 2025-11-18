@@ -87,6 +87,8 @@ export default function Dashboard() {
   const [profileStatus, setProfileStatus] = useState(null);
   const [loading, setLoading] = useState(true);
   const [userData, setUserData] = useState(null);
+  const [serverError, setServerError] = useState(false);
+
   const [dashboardStats, setDashboardStats] = useState({
     educations: 0,
     researchAreas: 0,
@@ -206,9 +208,46 @@ export default function Dashboard() {
       setLoading(false);
     } catch (error) {
       console.error("Error fetching dashboard data:", error);
+       setServerError(true); 
       setLoading(false);
     }
   };
+
+  if (serverError) {
+  return (
+    <Box
+      sx={{
+        minHeight: "100vh",
+        display: "flex",
+        alignItems: "center",
+        justifyContent: "center",
+        bgcolor: "background.default",
+        p: 2,
+      }}
+    >
+      <IncompleteCard sx={{ maxWidth: 520, textAlign: "center", p: 4 }}>
+        <ErrorOutlineIcon sx={{ fontSize: 50, color: "error.main", mb: 2 }} />
+
+        <Typography variant="h5" fontWeight={700} mb={1}>
+          Error Fetching Details
+        </Typography>
+
+        <Typography variant="body1" color="text.secondary" mb={3}>
+          Unable to connect to the server. Please try again later.
+        </Typography>
+
+        <Button
+          variant="contained"
+          onClick={() => window.location.reload()}
+          sx={{ mt: 1 }}
+        >
+          Retry
+        </Button>
+      </IncompleteCard>
+    </Box>
+  );
+}
+
 
   if (loading) {
     return (

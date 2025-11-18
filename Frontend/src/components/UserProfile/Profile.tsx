@@ -16,7 +16,7 @@ import axiosClient from '../../utils/axiosClient';
 import ErrorOutlineIcon from "@mui/icons-material/ErrorOutline";
 import Button from '@mui/material/Button';
 import EditIcon from "@mui/icons-material/Edit";
-import  Chip  from "@mui/material/Chip";
+import Chip from "@mui/material/Chip";
 
 const API_BASE_URL = import.meta.env.VITE_API_URL;
 
@@ -103,7 +103,7 @@ export default function Profile() {
   const [activeTab, setActiveTab] = useState("research");
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
-  
+
   // State for all data
   const [basicDetails, setBasicDetails] = useState(null);
   const [educations, setEducations] = useState([]);
@@ -122,6 +122,7 @@ export default function Profile() {
   const [researchCareer, setResearchCareer] = useState([]);
   const [profileStatus, setProfileStatus] = useState(null);
   const [profileIncomplete, setProfileIncomplete] = useState(false);
+  const [serverError, setServerError] = useState(false);
 
 
   useEffect(() => {
@@ -129,37 +130,38 @@ export default function Profile() {
   }, []);
 
   const checkProfileStatus = async () => {
-  try {
-    setLoading(true);
-    const token = localStorage.getItem('access_token');
-    const headers = { Authorization: `Bearer ${token}` };
+    try {
+      setLoading(true);
+      const token = localStorage.getItem('access_token');
+      const headers = { Authorization: `Bearer ${token}` };
 
-    const statusRes = await axiosClient.get(`${API_BASE_URL}/profile/status/`, { headers });
+      const statusRes = await axiosClient.get(`${API_BASE_URL}/profile/status/`, { headers });
 
-    setProfileStatus(statusRes.data);
+      setProfileStatus(statusRes.data);
 
-    // If profile incomplete, show message instead of loading all data
-    if (!statusRes.data.is_profile_complete) {
-      setProfileIncomplete(true);
+      // If profile incomplete, show message instead of loading all data
+      if (!statusRes.data.is_profile_complete) {
+        setProfileIncomplete(true);
+        setLoading(false);
+        return;
+      }
+
+      // Otherwise fetch everything
+      fetchAllData();
+    } catch (err) {
+      console.error("Error checking profile status:", err);
+      setServerError(true);
+
       setLoading(false);
-      return;
     }
-
-    // Otherwise fetch everything
-    fetchAllData();
-  } catch (err) {
-    console.error("Error checking profile status:", err);
-    setError("Failed to check profile status");
-    setLoading(false);
-  }
-};
+  };
 
 
   const fetchAllData = async () => {
     try {
       setLoading(true);
       const token = localStorage.getItem('access_token');
-      
+
       if (!token) {
         setError('Not authenticated');
         setLoading(false);
@@ -207,7 +209,7 @@ export default function Profile() {
       if (staffRes.data) {
         // Handle profile picture URL
         let profilePicUrl = staffRes.data.profile_picture || '';
-        
+
         // Ensure the URL is absolute, prepend backend URL if needed
         if (profilePicUrl && !profilePicUrl.startsWith('http')) {
           if (!profilePicUrl.startsWith('/')) {
@@ -253,20 +255,20 @@ export default function Profile() {
 
   // Check if research tab has any data
   const hasResearchData = () => {
-    return researchCareer.length > 0 || 
-           careerHighlights.length > 0 || 
-           researchAreas.length > 0 || 
-           researchIDs.length > 0 || 
-           publications.length > 0 || 
-           fundings.length > 0;
+    return researchCareer.length > 0 ||
+      careerHighlights.length > 0 ||
+      researchAreas.length > 0 ||
+      researchIDs.length > 0 ||
+      publications.length > 0 ||
+      fundings.length > 0;
   };
 
   // Check if academic tab has any data
   const hasAcademicData = () => {
-    return educations.length > 0 || 
-           adminPositions.length > 0 || 
-           honoraryPositions.length > 0 || 
-           conferences.length > 0;
+    return educations.length > 0 ||
+      adminPositions.length > 0 ||
+      honoraryPositions.length > 0 ||
+      conferences.length > 0;
   };
 
   // Check if supervision tab has any data
@@ -786,81 +788,109 @@ export default function Profile() {
   if (loading) {
     return (
       <Box sx={{ minHeight: "100vh", display: "flex", alignItems: "center", justifyContent: "center" }}>
-      
+
       </Box>
     );
   }
 
-  if (error) {
+  if (serverError) {
     return (
-      <Box sx={{ minHeight: "100vh", display: "flex", alignItems: "center", justifyContent: "center" }}>
-        <Typography color="error">{error}</Typography>
+      <Box
+        sx={{
+          minHeight: "100vh",
+          display: "flex",
+          alignItems: "center",
+          justifyContent: "center",
+          bgcolor: "background.default",
+          p: 2,
+        }}
+      >
+        <IncompleteProfileCard sx={{ maxWidth: 520, textAlign: "center", p: 4 }}>
+          <ErrorOutlineIcon sx={{ fontSize: 50, color: "error.main", mb: 2 }} />
+
+          <Typography variant="h5" fontWeight={700} mb={1}>
+            Error Fetching Details
+          </Typography>
+
+          <Typography variant="body1" color="text.secondary" mb={3}>
+            Unable to connect to the server. Please try again later.
+          </Typography>
+
+          <Button
+            variant="contained"
+            onClick={() => window.location.reload()}
+            sx={{ mt: 1 }}
+          >
+            Retry
+          </Button>
+        </IncompleteProfileCard>
       </Box>
     );
   }
 
-if (profileIncomplete) {
-  return (
-    <Box
-      sx={{
-        minHeight: "100vh",
-        display: "flex",
-        alignItems: "center",
-        justifyContent: "center",
-        backgroundColor: "background.default",
-        px: 2,
-      }}
-    >
-      <IncompleteProfileCard>
-        <ErrorOutlineIcon color="error" sx={{ fontSize: 60, mb: 2 }} />
-        <Typography variant="h5" fontWeight={700} mb={2}>
-          Oops! Your profile is incomplete
-        </Typography>
-        <Typography
-          variant="body1"
-          color="text.secondary"
-          mb={4}
-          sx={{ lineHeight: 1.6 }}
-        >
-          Complete the mandatory sections below to unlock your full profile:
-        </Typography>
 
-        <Box
-          sx={{
-            display: "flex",
-            gap: 1.5,
-            flexWrap: "wrap",
-            justifyContent: "center",
-            mb: 4,
-          }}
-        >
-          {!profileStatus?.profile_details_completed && (
-            <Chip label="Profile Details" color="primary" variant="outlined" />
-          )}
-          {!profileStatus?.educational_details_completed && (
-            <Chip label="Educational Details" color="primary" variant="outlined" />
-          )}
-          {!profileStatus?.research_career_completed && (
-            <Chip label="Research Career" color="primary" variant="outlined" />
-          )}
-          {!profileStatus?.career_highlights_completed && (
-            <Chip label="Career Highlights" color="primary" variant="outlined" />
-          )}
-        </Box>
+  if (profileIncomplete) {
+    return (
+      <Box
+        sx={{
+          minHeight: "100vh",
+          display: "flex",
+          alignItems: "center",
+          justifyContent: "center",
+          backgroundColor: "background.default",
+          px: 2,
+        }}
+      >
+        <IncompleteProfileCard>
+          <ErrorOutlineIcon color="error" sx={{ fontSize: 60, mb: 2 }} />
+          <Typography variant="h5" fontWeight={700} mb={2}>
+            Oops! Your profile is incomplete
+          </Typography>
+          <Typography
+            variant="body1"
+            color="text.secondary"
+            mb={4}
+            sx={{ lineHeight: 1.6 }}
+          >
+            Complete the mandatory sections below to unlock your full profile:
+          </Typography>
 
-        <Button
-          startIcon={<EditIcon />}
-          onClick={() => (window.location.href = "/edit")}
-          color="primary"
-          variant="contained"
-          fullWidth
-        >
-          Complete Profile
-        </Button>
-      </IncompleteProfileCard>
-    </Box>
-  );
-}
+          <Box
+            sx={{
+              display: "flex",
+              gap: 1.5,
+              flexWrap: "wrap",
+              justifyContent: "center",
+              mb: 4,
+            }}
+          >
+            {!profileStatus?.profile_details_completed && (
+              <Chip label="Profile Details" color="primary" variant="outlined" />
+            )}
+            {!profileStatus?.educational_details_completed && (
+              <Chip label="Educational Details" color="primary" variant="outlined" />
+            )}
+            {!profileStatus?.research_career_completed && (
+              <Chip label="Research Career" color="primary" variant="outlined" />
+            )}
+            {!profileStatus?.career_highlights_completed && (
+              <Chip label="Career Highlights" color="primary" variant="outlined" />
+            )}
+          </Box>
+
+          <Button
+            startIcon={<EditIcon />}
+            onClick={() => (window.location.href = "/edit")}
+            color="primary"
+            variant="contained"
+            fullWidth
+          >
+            Complete Profile
+          </Button>
+        </IncompleteProfileCard>
+      </Box>
+    );
+  }
 
 
   return (
@@ -895,7 +925,7 @@ if (profileIncomplete) {
             <Typography variant="h6" color="text.secondary" fontWeight={500} mb={3}>
               {basicDetails.department}
             </Typography>
-            
+
             {/* Contact Info */}
             <Box
               sx={{
@@ -919,7 +949,7 @@ if (profileIncomplete) {
                 </Box>
               )}
             </Box>
-            
+
             <Box
               sx={{
                 display: "flex",

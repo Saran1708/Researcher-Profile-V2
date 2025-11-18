@@ -1,7 +1,7 @@
-// src/components/PrivateRoute.tsx
+// src/components/AdminRoute.tsx
 import { Navigate } from "react-router-dom";
 
-const PrivateRoute = ({ children }: { children: JSX.Element }) => {
+const AdminRoute = ({ children }: { children: JSX.Element }) => {
   const token = localStorage.getItem("access_token");
   const role = localStorage.getItem("role"); // "Admin" or "Staff"
 
@@ -9,8 +9,12 @@ const PrivateRoute = ({ children }: { children: JSX.Element }) => {
     return <Navigate to="/login" replace />;
   }
 
-  // Staff and Admin both allowed here
+  // Allow only Admin
+  if (role !== "Admin") {
+    return <Navigate to="/login" replace />;
+  }
+
   return children;
 };
 
-export default PrivateRoute;
+export default AdminRoute;

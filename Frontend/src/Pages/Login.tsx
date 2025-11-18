@@ -69,6 +69,7 @@ export default function SignIn(props: { disableCustomTheme?: boolean }) {
   const [passwordErrorMessage, setPasswordErrorMessage] = React.useState('');
   const [loading, setLoading] = React.useState(false); // ⬅️ starts as false now
 
+
   const navigate = useNavigate();
 
   const handleSubmit = async (event: React.FormEvent<HTMLFormElement>) => {
@@ -91,11 +92,22 @@ export default function SignIn(props: { disableCustomTheme?: boolean }) {
       localStorage.setItem('access_token', access);
       localStorage.setItem('refresh_token', refresh);
       localStorage.setItem('email', user.email);
+      localStorage.setItem('role', user.role);
 
       if (!user.password_changed) {
-        navigate('/reset-password', { state: { skipLoader: true } });
-      } else {
+        if (user.role === "Admin") {
+
+          navigate('/admin/home', { state: { skipLoader: true } });
+          return;
+        } else {
+          navigate('/reset-password', { state: { skipLoader: true } });
+          return
+        }
+      }
+
+      else {
         navigate('/home', { state: { skipLoader: true } });
+
       }
     } catch (error: any) {
       setLoading(false); // hide loader on error

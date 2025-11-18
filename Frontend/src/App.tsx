@@ -8,9 +8,19 @@ import PrivateRoute from "./components/Routing/PrivateRoute";
 import UserHome from './Pages/UserHome';
 import Loader from './components/MainComponents/Loader';
 import UserProfile from './Pages/UserProfile';
-import { GlobalStyles } from '@mui/material'; 
+import { GlobalStyles } from '@mui/material';
 import CssBaseline from '@mui/material/CssBaseline';
-import ResearchBlogManager from './Pages/ResearchBlogManager';
+import Dashboard from './admin'; // ✅ import admin app
+import AdminRoute from './components/Routing/AdminRoute';
+import ManageUsers from './admin/pages/ManageUsers';
+import PhdDetails from './admin/pages/PhdDetails';
+import ProfileViews from './admin/pages/ProfileViews';
+import Funding from './admin/pages/Funding';
+import Publications from './admin/pages/Publications';
+import Research from './admin/pages/Research';
+import Export from './admin/pages/Export';
+
+
 
 const App = () => {
   const location = useLocation();
@@ -46,7 +56,7 @@ const App = () => {
 
   return (
     <>
-    {/* ✅ Add global resets here */}
+      {/* ✅ Add global resets here */}
       <CssBaseline />
       <GlobalStyles
         styles={{
@@ -83,8 +93,80 @@ const App = () => {
             </PrivateRoute>
           }
         />
+        {/* ✅ Admin dashboard */}
 
-        
+        <Route path="/admin/home" element={
+          <AdminRoute>
+            <Dashboard />
+            </AdminRoute>
+
+
+        } />
+
+
+        <Route path="/admin/users" element={
+          <AdminRoute>
+            <ManageUsers />
+            </AdminRoute>
+
+
+        } />
+
+
+        <Route path="/admin/phd" element={
+          <AdminRoute>
+            <PhdDetails />
+            </AdminRoute>
+
+
+        } />
+
+
+        <Route path="/admin/views" element={
+          <AdminRoute>
+            <ProfileViews />
+            </AdminRoute>
+
+
+        } />
+
+         <Route path="/admin/funding" element={
+          <AdminRoute>
+            <Funding />
+            </AdminRoute>
+
+
+        } />
+
+
+        <Route path="/admin/publications" element={
+          <AdminRoute>
+            <Publications />
+            </AdminRoute>
+
+
+        } />
+
+
+        <Route path="/admin/research" element={
+          <AdminRoute>
+            <Research />
+            </AdminRoute>
+
+
+        } />
+
+
+        <Route path="/admin/export" element={
+          <AdminRoute>
+            <Export />
+            </AdminRoute>
+
+
+        } />
+
+
+
         <Route path="*" element={<div>Page not found</div>} />
       </Routes>
 
