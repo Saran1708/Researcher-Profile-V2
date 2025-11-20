@@ -142,6 +142,7 @@ const ResourcePersonForm = () => {
       }
 
       setSuccessSnackbarOpen(true);
+      setExpanded(false);
     } catch (err) {
       console.error('Error saving resource persons:', err);
       setSnackbarMsg('Error saving data');

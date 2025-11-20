@@ -146,6 +146,7 @@ const ResearchIdForm = () => {
 
             setSnackbarOpen(false);
             setSuccessSnackbarOpen(true);
+            setExpanded(false);
 
         } catch (err) {
             console.error('Error saving research ID details:', err);

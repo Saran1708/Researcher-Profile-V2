@@ -3,7 +3,7 @@ import { alpha } from '@mui/material/styles';
 import CssBaseline from '@mui/material/CssBaseline';
 import Box from '@mui/material/Box';
 import Stack from '@mui/material/Stack';
-import Button from '@mui/material/Button';
+import Paper from '@mui/material/Paper';
 import TextField from '@mui/material/TextField';
 import Table from '@mui/material/Table';
 import TableBody from '@mui/material/TableBody';
@@ -13,7 +13,6 @@ import TableHead from '@mui/material/TableHead';
 import TableRow from '@mui/material/TableRow';
 import TablePagination from '@mui/material/TablePagination';
 import TableSortLabel from '@mui/material/TableSortLabel';
-import Paper from '@mui/material/Paper';
 import SearchIcon from '@mui/icons-material/Search';
 import DownloadIcon from '@mui/icons-material/Download';
 import InputAdornment from '@mui/material/InputAdornment';
@@ -23,6 +22,11 @@ import AppNavbar from '../components/AppNavbar';
 import Header from '../components/Header';
 import SideMenu from '../components/SideMenu';
 import AppTheme from '../theme/AppTheme';
+import OpenInNewIcon from '@mui/icons-material/OpenInNew';
+import Loader from '../../components/MainComponents/Loader';
+import axiosClient from '../../utils/axiosClient';
+import Button from '@mui/material/Button';
+
 import {
   chartsCustomizations,
   datePickersCustomizations,
@@ -35,72 +39,13 @@ const xThemeComponents = {
   ...treeViewCustomizations,
 };
 
-// Sample data for Research Publications
-const initialResearchData = [
-  {
-    id: 1,
-    name: 'Dr. John Doe',
-    research_title: 'Deep Learning Applications in Medical Imaging',
-    research_link: 'https://example.com/research1'
-  },
-  {
-    id: 2,
-    name: 'Dr. Jane Smith',
-    research_title: 'Quantum Computing for Cryptographic Systems',
-    research_link: 'https://example.com/research2'
-  },
-  {
-    id: 3,
-    name: 'Dr. Robert Wilson',
-    research_title: 'Statistical Analysis of Climate Change Data',
-    research_link: 'https://example.com/research3'
-  },
-  {
-    id: 4,
-    name: 'Dr. Sarah Johnson',
-    research_title: 'Green Chemistry and Sustainable Catalysis',
-    research_link: 'https://example.com/research4'
-  },
-  {
-    id: 5,
-    name: 'Dr. Michael Brown',
-    research_title: 'CRISPR Technology in Agricultural Biotechnology',
-    research_link: 'https://example.com/research5'
-  }
-];
 
-// Sample data for Research Areas
-const initialResearchAreas = [
-  {
-    id: 1,
-    name: 'Dr. John Doe',
-    research_areas: 'Artificial Intelligence, Machine Learning, Computer Vision'
-  },
-  {
-    id: 2,
-    name: 'Dr. Jane Smith',
-    research_areas: 'Quantum Computing, Quantum Cryptography, Quantum Algorithms'
-  },
-  {
-    id: 3,
-    name: 'Dr. Robert Wilson',
-    research_areas: 'Statistical Modeling, Data Science, Predictive Analytics'
-  },
-  {
-    id: 4,
-    name: 'Dr. Sarah Johnson',
-    research_areas: 'Organic Chemistry, Green Chemistry, Catalysis'
-  },
-  {
-    id: 5,
-    name: 'Dr. Michael Brown',
-    research_areas: 'Genetic Engineering, Biotechnology, Plant Biology'
-  }
-];
+const RESEARCH_IDS_API = import.meta.env.VITE_API_URL + '/admin/research_ids/';
+const RESEARCH_AREAS_API = import.meta.env.VITE_API_URL + '/admin/research_areas/';
 
 export default function Research(props) {
   // Research Publications State
-  const [researchData] = React.useState(initialResearchData);
+  const [researchData, setResearchData] = React.useState([]);
   const [searchQuery, setSearchQuery] = React.useState('');
   const [page, setPage] = React.useState(0);
   const [rowsPerPage, setRowsPerPage] = React.useState(10);
@@ -108,12 +53,64 @@ export default function Research(props) {
   const [order, setOrder] = React.useState('asc');
 
   // Research Areas State
-  const [researchAreas] = React.useState(initialResearchAreas);
+  const [researchAreas, setResearchAreas] = React.useState([]);
   const [areasSearchQuery, setAreasSearchQuery] = React.useState('');
   const [areasPage, setAreasPage] = React.useState(0);
   const [areasRowsPerPage, setAreasRowsPerPage] = React.useState(10);
   const [areasOrderBy, setAreasOrderBy] = React.useState('id');
   const [areasOrder, setAreasOrder] = React.useState('asc');
+
+  const [loading, setLoading] = React.useState(false);
+  const [error, setError] = React.useState(null);
+
+
+  // Fetch data on mount
+  React.useEffect(() => {
+    fetchAll();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
+  const fetchAll = async () => {
+    setLoading(true);
+    setError(null);
+
+    try {
+      const token = localStorage.getItem('access_token');
+      if (!token) {
+        setError("No access token found.");
+        setLoading(false);
+        return;
+      }
+
+      const [idsRes, areasRes] = await Promise.all([
+        axiosClient.get(RESEARCH_IDS_API, { headers: { Authorization: `Bearer ${token}` } }),
+        axiosClient.get(RESEARCH_AREAS_API, { headers: { Authorization: `Bearer ${token}` } })
+      ]);
+
+      // Normalize research IDs
+      const normalizedIds = idsRes.data.map(item => ({
+        id: item.id,
+        name: item.name ?? item.staffName ?? item.email ?? '',
+        research_title: item.research_title ?? item.researchTitle ?? '',
+        research_link: item.research_link ?? item.researchLink ?? ''
+      }));
+
+      // Normalize research areas
+      const normalizedAreas = areasRes.data.map(item => ({
+        id: item.id ?? item.email_id,
+        name: item.name ?? item.staffName ?? item.email ?? '',
+        research_areas: item.research_areas ?? item.researchAreas ?? ''
+      }));
+
+      setResearchData(normalizedIds);
+      setResearchAreas(normalizedAreas);
+    } catch (err) {
+      console.error("Error fetching data:", err);
+      setError("Error fetching data");
+    } finally {
+      setLoading(false);
+    }
+  };
 
   // Research Publications Handlers
   const handleSort = (property) => {
@@ -123,14 +120,14 @@ export default function Research(props) {
   };
 
   const filteredResearch = researchData.filter(research =>
-    research.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-    research.research_title.toLowerCase().includes(searchQuery.toLowerCase())
+    (research.name || '').toLowerCase().includes(searchQuery.toLowerCase()) ||
+    (research.research_title || '').toLowerCase().includes(searchQuery.toLowerCase())
   );
 
   const sortedResearch = [...filteredResearch].sort((a, b) => {
     if (orderBy === 'id') return order === 'asc' ? a.id - b.id : b.id - a.id;
-    const aValue = a[orderBy]?.toString().toLowerCase() || '';
-    const bValue = b[orderBy]?.toString().toLowerCase() || '';
+    const aValue = (a[orderBy] ?? '').toString().toLowerCase();
+    const bValue = (b[orderBy] ?? '').toString().toLowerCase();
     return order === 'asc' ? aValue.localeCompare(bValue) : bValue.localeCompare(aValue);
   });
 
@@ -147,14 +144,14 @@ export default function Research(props) {
   };
 
   const filteredAreas = researchAreas.filter(area =>
-    area.name.toLowerCase().includes(areasSearchQuery.toLowerCase()) ||
-    area.research_areas.toLowerCase().includes(areasSearchQuery.toLowerCase())
+    (area.name || '').toLowerCase().includes(areasSearchQuery.toLowerCase()) ||
+    (area.research_areas || '').toLowerCase().includes(areasSearchQuery.toLowerCase())
   );
 
   const sortedAreas = [...filteredAreas].sort((a, b) => {
     if (areasOrderBy === 'id') return areasOrder === 'asc' ? a.id - b.id : b.id - a.id;
-    const aValue = a[areasOrderBy]?.toString().toLowerCase() || '';
-    const bValue = b[areasOrderBy]?.toString().toLowerCase() || '';
+    const aValue = (a[areasOrderBy] ?? '').toString().toLowerCase();
+    const bValue = (b[areasOrderBy] ?? '').toString().toLowerCase();
     return areasOrder === 'asc' ? aValue.localeCompare(bValue) : bValue.localeCompare(aValue);
   });
 
@@ -166,6 +163,7 @@ export default function Research(props) {
   return (
     <AppTheme {...props} themeComponents={xThemeComponents}>
       <CssBaseline enableColorScheme />
+      {loading && <Loader />}
 
       <Box sx={{ display: 'flex' }}>
         <SideMenu />
@@ -201,10 +199,10 @@ export default function Research(props) {
               <Typography variant="h6" sx={{ fontWeight: 600 }}>
                 Research Ids
               </Typography>
-              <Button 
-                variant="contained" 
-                color="success" 
-                startIcon={<DownloadIcon />} 
+              <Button
+                variant="contained"
+                color="success"
+                startIcon={<DownloadIcon />}
                 sx={{ borderRadius: 2, textTransform: 'none', px: 3, py: 1 }}
               >
                 Export
@@ -234,27 +232,27 @@ export default function Research(props) {
                   <TableHead>
                     <TableRow>
                       <TableCell>
-                        <TableSortLabel 
-                          active={orderBy === 'id'} 
-                          direction={orderBy === 'id' ? order : 'asc'} 
+                        <TableSortLabel
+                          active={orderBy === 'id'}
+                          direction={orderBy === 'id' ? order : 'asc'}
                           onClick={() => handleSort('id')}
                         >
                           ID
                         </TableSortLabel>
                       </TableCell>
                       <TableCell>
-                        <TableSortLabel 
-                          active={orderBy === 'name'} 
-                          direction={orderBy === 'name' ? order : 'asc'} 
+                        <TableSortLabel
+                          active={orderBy === 'name'}
+                          direction={orderBy === 'name' ? order : 'asc'}
                           onClick={() => handleSort('name')}
                         >
                           Name
                         </TableSortLabel>
                       </TableCell>
                       <TableCell>
-                        <TableSortLabel 
-                          active={orderBy === 'research_title'} 
-                          direction={orderBy === 'research_title' ? order : 'asc'} 
+                        <TableSortLabel
+                          active={orderBy === 'research_title'}
+                          direction={orderBy === 'research_title' ? order : 'asc'}
                           onClick={() => handleSort('research_title')}
                         >
                           Research Title
@@ -279,14 +277,15 @@ export default function Research(props) {
                           <TableCell>{research.name}</TableCell>
                           <TableCell>{research.research_title}</TableCell>
                           <TableCell>
-                            <Link 
-                              href={research.research_link} 
-                              target="_blank" 
+                            <Link
+                              href={research.research_link}
+                              target="_blank"
                               rel="noopener noreferrer"
                               sx={{ textDecoration: 'none' }}
                             >
                               View Link
                             </Link>
+                            &nbsp;<OpenInNewIcon sx={{ fontSize: 16 }} />
                           </TableCell>
                         </TableRow>
                       ))
@@ -317,10 +316,10 @@ export default function Research(props) {
               <Typography variant="h6" sx={{ fontWeight: 600 }}>
                 Research Areas
               </Typography>
-              <Button 
-                variant="contained" 
-                color="success" 
-                startIcon={<DownloadIcon />} 
+              <Button
+                variant="contained"
+                color="success"
+                startIcon={<DownloadIcon />}
                 sx={{ borderRadius: 2, textTransform: 'none', px: 3, py: 1 }}
               >
                 Export
@@ -350,27 +349,27 @@ export default function Research(props) {
                   <TableHead>
                     <TableRow>
                       <TableCell>
-                        <TableSortLabel 
-                          active={areasOrderBy === 'id'} 
-                          direction={areasOrderBy === 'id' ? areasOrder : 'asc'} 
+                        <TableSortLabel
+                          active={areasOrderBy === 'id'}
+                          direction={areasOrderBy === 'id' ? areasOrder : 'asc'}
                           onClick={() => handleAreasSort('id')}
                         >
                           ID
                         </TableSortLabel>
                       </TableCell>
                       <TableCell>
-                        <TableSortLabel 
-                          active={areasOrderBy === 'name'} 
-                          direction={areasOrderBy === 'name' ? areasOrder : 'asc'} 
+                        <TableSortLabel
+                          active={areasOrderBy === 'name'}
+                          direction={areasOrderBy === 'name' ? areasOrder : 'asc'}
                           onClick={() => handleAreasSort('name')}
                         >
                           Name
                         </TableSortLabel>
                       </TableCell>
                       <TableCell>
-                        <TableSortLabel 
-                          active={areasOrderBy === 'research_areas'} 
-                          direction={areasOrderBy === 'research_areas' ? areasOrder : 'asc'} 
+                        <TableSortLabel
+                          active={areasOrderBy === 'research_areas'}
+                          direction={areasOrderBy === 'research_areas' ? areasOrder : 'asc'}
                           onClick={() => handleAreasSort('research_areas')}
                         >
                           Research Areas

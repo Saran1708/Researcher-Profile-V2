@@ -24,6 +24,7 @@ urlpatterns = [
     path('api/',include('UserDetails.urls')),
     path('api/home/',include('UserHome.urls')),
     path('',include('LoginApi.urls')),
+    path('api/admin/', include('Admin.urls'))
 ]
 
 if settings.DEBUG:

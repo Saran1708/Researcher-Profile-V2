@@ -155,6 +155,7 @@ const PhdForm = () => {
       }
 
       setSuccessSnackbarOpen(true);
+      setExpanded(false);
     } catch (err) {
       console.error('Error saving PhD data:', err);
       setSnackbarMsg('Error saving PhD data');

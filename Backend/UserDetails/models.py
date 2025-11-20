@@ -43,7 +43,7 @@ class Staff_Details(models.Model):
     prefix = models.CharField(max_length=50)
     name = models.CharField(max_length=1000)
     department = models.CharField(max_length=1000)
-    department_order = models.IntegerField()
+    department_order = models.IntegerField()   
     institution = models.CharField(max_length=1000,default="Madras Christian College")
     phone = models.CharField(max_length=1000)
     address = models.CharField(max_length=1000)

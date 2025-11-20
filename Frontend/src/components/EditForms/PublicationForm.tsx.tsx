@@ -142,6 +142,7 @@ const PublicationForm = () => {
             }
 
             setSuccessSnackbarOpen(true);
+            setExpanded(false);
         } catch (err) {
             console.error('Error saving publication details:', err);
             setSnackbarMsg('Error saving publication details');

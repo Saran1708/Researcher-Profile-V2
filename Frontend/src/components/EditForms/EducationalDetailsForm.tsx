@@ -165,6 +165,7 @@ const EducationDetailsForm = () => {
 
       setSnackbarOpen(false);
       setSuccessSnackbarOpen(true);
+      setExpanded(false);
 
     } catch (err) {
       console.error('Error saving education details:', err);

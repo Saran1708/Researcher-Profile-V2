@@ -131,6 +131,7 @@ const ConsultancyForm = () => {
       }
 
       setSuccessSnackbarOpen(true);
+      setExpanded(false);
     } catch (err) {
       console.error('Error saving consultancies:', err);
       setSnackbarMsg('Error saving data');

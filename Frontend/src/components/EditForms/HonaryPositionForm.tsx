@@ -116,6 +116,7 @@ const HonaryPositionForm = () => {
                 }
             }
             setSuccessSnackbarOpen(true);
+            setExpanded(false);
         } catch (err) {
             console.error('Error saving honorary positions:', err);
             setSnackbarMsg('Error saving honorary positions');

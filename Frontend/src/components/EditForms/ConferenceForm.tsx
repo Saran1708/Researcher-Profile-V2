@@ -130,6 +130,7 @@ const ConferenceForm = () => {
                 }
             }
             setSuccessSnackbarOpen(true);
+            setExpanded(false);
         } catch (err) {
             console.error('Error saving conferences:', err);
             setSnackbarMsg('Error saving conferences');

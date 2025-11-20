@@ -179,6 +179,7 @@ const FundingForm = () => {
 
             setSnackbarOpen(false);
             setSuccessSnackbarOpen(true);
+            setExpanded(false);
 
         } catch (err) {
             console.error('Error saving funding details:', err);

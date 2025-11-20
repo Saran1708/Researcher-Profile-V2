@@ -133,6 +133,7 @@ const ResearchDetailsForm = () => {
 
       setSnackbarOpen(false);
       setSuccessSnackbarOpen(true);
+      setExpanded(false);
 
     } catch (err) {
       console.error('Error saving research details:', err);

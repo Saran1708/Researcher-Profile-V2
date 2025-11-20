@@ -22,7 +22,9 @@ import SideMenu from '../components/SideMenu';
 import AppTheme from '../theme/AppTheme';
 import Typography from '@mui/material/Typography';
 import Button from '@mui/material/Button';
-import DownloadIcon from '@mui/icons-material/Download'; 
+import DownloadIcon from '@mui/icons-material/Download';
+import Loader from '../../components/MainComponents/Loader';
+import axiosClient from '../../utils/axiosClient';
 import {
   chartsCustomizations,
   datePickersCustomizations,
@@ -35,89 +37,39 @@ const xThemeComponents = {
   ...treeViewCustomizations,
 };
 
-// Sample funding data
-const initialFundings = [
-  {
-    id: 1,
-    staffName: 'Dr. John Doe',
-    projectTitle: 'Machine Learning Applications in Healthcare',
-    fundingAgency: 'Department of Science and Technology',
-    fundingMonthAndYear: 'January 2024',
-    fundingAmount: 500000.00,
-    fundingStatus: 'Approved'
-  },
-  {
-    id: 2,
-    staffName: 'Dr. Jane Smith',
-    projectTitle: 'Renewable Energy Systems for Rural Development ',
-    fundingAgency: 'Ministry of New and Renewable Energy',
-    fundingMonthAndYear: 'March 2024',
-    fundingAmount: 750000.00,
-    fundingStatus: 'Ongoing'
-  },
-  {
-    id: 3,
-    staffName: 'Prof. Robert Wilson',
-    projectTitle: 'Advanced Materials for Sustainable Construction',
-    fundingAgency: 'Indian Council of Scientific Research',
-    fundingMonthAndYear: 'February 2024',
-    fundingAmount: 1200000.00,
-    fundingStatus: 'Completed'
-  },
-  {
-    id: 4,
-    staffName: 'Dr. Emily Brown',
-    projectTitle: 'AI-Based Traffic Management System',
-    fundingAgency: 'Ministry of Road Transport',
-    fundingMonthAndYear: 'April 2024',
-    fundingAmount: 850000.00,
-    fundingStatus: 'Approved'
-  },
-  {
-    id: 5,
-    staffName: 'Dr. Michael Chen',
-    projectTitle: 'Blockchain for Supply Chain Transparency',
-    fundingAgency: 'National Research Foundation',
-    fundingMonthAndYear: 'May 2024',
-    fundingAmount: 600000.00,
-    fundingStatus: 'Pending'
-  },
-  {
-    id: 6,
-    staffName: 'Prof. Sarah Johnson',
-    projectTitle: 'Water Purification Technologies',
-    fundingAgency: 'Department of Water Resources',
-    fundingMonthAndYear: 'June 2024',
-    fundingAmount: 950000.00,
-    fundingStatus: 'Ongoing'
-  },
-  {
-    id: 7,
-    staffName: 'Dr. David Lee',
-    projectTitle: 'IoT Solutions for Smart Agriculture',
-    fundingAgency: 'Ministry of Agriculture',
-    fundingMonthAndYear: 'January 2024',
-    fundingAmount: 450000.00,
-    fundingStatus: 'Completed'
-  },
-  {
-    id: 8,
-    staffName: 'Dr. Maria Garcia',
-    projectTitle: 'Cybersecurity Framework for Financial Systems',
-    fundingAgency: 'Reserve Bank Innovation Hub',
-    fundingMonthAndYear: 'July 2024',
-    fundingAmount: 1100000.00,
-    fundingStatus: 'Approved'
-  }
-];
+const API_URL = import.meta.env.VITE_API_URL + '/admin/funding/';
 
 export default function Funding(props: any) {
-  const [fundings, setFundings] = React.useState(initialFundings);
+  const [fundings, setFundings] = React.useState([]);
+  const [loading, setLoading] = React.useState(false);
   const [searchQuery, setSearchQuery] = React.useState('');
   const [page, setPage] = React.useState(0);
   const [rowsPerPage, setRowsPerPage] = React.useState(10);
   const [orderBy, setOrderBy] = React.useState('id');
   const [order, setOrder] = React.useState('asc');
+
+  // Fetch funding data on component mount
+  React.useEffect(() => {
+    fetchFundingData();
+  }, []);
+
+  const fetchFundingData = async () => {
+    setLoading(true);
+    try {
+      const token = localStorage.getItem('access_token');
+      if (!token) return;
+
+      const res = await axiosClient.get(API_URL, {
+        headers: { Authorization: `Bearer ${token}` }
+      });
+
+      setFundings(res.data);
+    } catch (err) {
+      console.error('Error fetching funding data:', err);
+    } finally {
+      setLoading(false);
+    }
+  };
 
   const handleSort = (property) => {
     const isAsc = orderBy === property && order === 'asc';
@@ -150,22 +102,20 @@ export default function Funding(props: any) {
 
   const getStatusColor = (status) => {
     switch (status.toLowerCase()) {
-      case 'approved':
-        return 'success';
-      case 'ongoing':
-        return 'primary';
       case 'completed':
-        return 'info';
-      case 'pending':
-        return 'warning';
+        return 'success';   // ✅ same as PhD completed
+      case 'ongoing':
+        return 'warning';   // ✅ same as PhD ongoing
       default:
-        return 'default';
+        return 'default';   // for anything else
     }
   };
+
 
   return (
     <AppTheme {...props} themeComponents={xThemeComponents}>
       <CssBaseline enableColorScheme />
+      {loading && <Loader />}
 
       <Box sx={{ display: 'flex' }}>
         <SideMenu />
@@ -192,12 +142,6 @@ export default function Funding(props: any) {
             }}
           >
             <Header />
-
-            {/* --------------------- */}
-            {/*     YOUR CONTENT      */}
-            {/* --------------------- */}
-
-          
 
             <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mt: 2 }}>
               <Typography variant="h6" sx={{ fontWeight: 600, display: 'flex', alignItems: 'center', gap: 1 }}>
@@ -307,24 +251,33 @@ export default function Funding(props: any) {
                     </TableRow>
                   </TableHead>
                   <TableBody>
-                    {paginatedFundings.map((funding) => (
-                      <TableRow key={funding.id} hover>
-                        <TableCell>{funding.id}</TableCell>
-                        <TableCell>{funding.staffName}</TableCell>
-                        <TableCell>{funding.projectTitle}</TableCell>
-                        <TableCell>{funding.fundingAgency}</TableCell>
-                        <TableCell>{funding.fundingMonthAndYear}</TableCell>
-                        <TableCell>₹{funding.fundingAmount.toLocaleString('en-IN', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</TableCell>
-                        <TableCell>
-                          <Chip
-                            label={funding.fundingStatus}
-                            size="small"
-                            color={getStatusColor(funding.fundingStatus)}
-                            sx={{ borderRadius: 1.5 }}
-                          />
+                    {paginatedFundings.length === 0 ? (
+                      <TableRow>
+                        <TableCell colSpan={7} align="center" sx={{ py: 4 }}>
+                          <Typography color="text.secondary">No funding records found</Typography>
                         </TableCell>
                       </TableRow>
-                    ))}
+                    ) : (
+                      paginatedFundings.map((funding) => (
+                        <TableRow key={funding.id} hover>
+                          <TableCell>{funding.id}</TableCell>
+                          <TableCell>{funding.staffName}</TableCell>
+                          <TableCell>{funding.projectTitle}</TableCell>
+                          <TableCell>{funding.fundingAgency}</TableCell>
+                          <TableCell>{funding.fundingMonthAndYear}</TableCell>
+                          <TableCell>₹{funding.fundingAmount.toLocaleString('en-IN', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</TableCell>
+                          <TableCell>
+                            <Chip
+                              label={funding.fundingStatus}
+                              size="small"
+                              color={getStatusColor(funding.fundingStatus)}
+                              sx={{ borderRadius: 1.5 }}
+                            />
+
+                          </TableCell>
+                        </TableRow>
+                      ))
+                    )}
                   </TableBody>
                 </Table>
               </TableContainer>

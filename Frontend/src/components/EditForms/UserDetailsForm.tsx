@@ -267,10 +267,13 @@ const UserDetailsForm = () => {
 
       setSnackbarOpen(false);
       setSuccessSnackbarOpen(true);
+       setExpanded(false);
     } catch (err) {
       console.error('Error saving staff details:', err);
       setSnackbarMsg('Error saving profile');
       setSnackbarOpen(true);
+     
+
     } finally {
       // ✅ ADD THIS LINE
       setLoading(false);

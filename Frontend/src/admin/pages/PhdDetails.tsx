@@ -1,4 +1,3 @@
-// Updated component with two summary cards above first table
 import * as React from 'react';
 import { alpha } from '@mui/material/styles';
 import CssBaseline from '@mui/material/CssBaseline';
@@ -19,16 +18,13 @@ import SearchIcon from '@mui/icons-material/Search';
 import DownloadIcon from '@mui/icons-material/Download';
 import InputAdornment from '@mui/material/InputAdornment';
 import Chip from '@mui/material/Chip';
-import Card from '@mui/material/Card';
-import CardContent from '@mui/material/CardContent';
 import Typography from '@mui/material/Typography';
-import SchoolIcon from '@mui/icons-material/School';
-import EmojiEventsIcon from '@mui/icons-material/EmojiEvents';
-import Grid from '@mui/material/Grid';
 import AppNavbar from '../components/AppNavbar';
 import Header from '../components/Header';
 import SideMenu from '../components/SideMenu';
 import AppTheme from '../theme/AppTheme';
+import Loader from '../../components/MainComponents/Loader';
+import axiosClient from '../../utils/axiosClient';
 import {
     chartsCustomizations,
     datePickersCustomizations,
@@ -41,96 +37,12 @@ const xThemeComponents = {
     ...treeViewCustomizations,
 };
 
-// Sample data
-const initialScholars = [
-    {
-        id: 1,
-        staffName: 'Dr. John Doe',
-        department: 'Computer Science',
-        scholarName: 'Alice Johnson',
-        topic: 'Machine Learning in Healthcare',
-        status: 'Ongoing',
-        yearOfCompletion: '-'
-    },
-    {
-        id: 2,
-        staffName: 'Dr. Jane Smith',
-        department: 'Physics',
-        scholarName: 'Bob Williams',
-        topic: 'Quantum Computing Applications',
-        status: 'Completed',
-        yearOfCompletion: '2023'
-    },
-    {
-        id: 3,
-        staffName: 'Dr. Robert Wilson',
-        department: 'Mathematics',
-        scholarName: 'Carol Davis',
-        topic: 'Advanced Statistical Methods',
-        status: 'Ongoing',
-        yearOfCompletion: '-'
-    },
-    {
-        id: 4,
-        staffName: 'Dr. Sarah Johnson',
-        department: 'Chemistry',
-        scholarName: 'David Miller',
-        topic: 'Organic Synthesis and Catalysis',
-        status: 'Completed',
-        yearOfCompletion: '2022'
-    },
-    {
-        id: 5,
-        staffName: 'Dr. Michael Brown',
-        department: 'Biology',
-        scholarName: 'Emma Wilson',
-        topic: 'Genetic Engineering in Plants',
-        status: 'Ongoing',
-        yearOfCompletion: '-'
-    }
-];
-
-const initialStaffData = [
-    {
-        id: 1,
-        staffName: 'Dr. John Doe',
-        department: 'Computer Science',
-        phdScholarsRegistered: 3,
-        phdScholarsProduced: 1
-    },
-    {
-        id: 2,
-        staffName: 'Dr. Jane Smith',
-        department: 'Physics',
-        phdScholarsRegistered: 5,
-        phdScholarsProduced: 2
-    },
-    {
-        id: 3,
-        staffName: 'Dr. Robert Wilson',
-        department: 'Mathematics',
-        phdScholarsRegistered: 2,
-        phdScholarsProduced: 0
-    },
-    {
-        id: 4,
-        staffName: 'Dr. Sarah Johnson',
-        department: 'Chemistry',
-        phdScholarsRegistered: 4,
-        phdScholarsProduced: 2
-    },
-    {
-        id: 5,
-        staffName: 'Dr. Michael Brown',
-        department: 'Biology',
-        phdScholarsRegistered: 3,
-        phdScholarsProduced: 1
-    }
-];
+const API_URL = import.meta.env.VITE_API_URL + '/admin/phd/';
 
 export default function PhdDetails(props) {
-    const [scholars] = React.useState(initialScholars);
-    const [staffData] = React.useState(initialStaffData);
+    const [scholars, setScholars] = React.useState([]);
+    const [staffData, setStaffData] = React.useState([]);
+    const [loading, setLoading] = React.useState(false);
     const [searchQuery, setSearchQuery] = React.useState('');
     const [page, setPage] = React.useState(0);
     const [rowsPerPage, setRowsPerPage] = React.useState(10);
@@ -142,6 +54,36 @@ export default function PhdDetails(props) {
     const [staffRowsPerPage, setStaffRowsPerPage] = React.useState(10);
     const [staffOrderBy, setStaffOrderBy] = React.useState('id');
     const [staffOrder, setStaffOrder] = React.useState('asc');
+
+    // Fetch data on component mount
+    React.useEffect(() => {
+        fetchAllData();
+    }, []);
+
+    const fetchAllData = async () => {
+        setLoading(true);
+        try {
+            const token = localStorage.getItem('access_token');
+            if (!token) return;
+
+            // Fetch scholars count
+            const countRes = await axiosClient.get(`${API_URL}scholars-count/`, {
+                headers: { Authorization: `Bearer ${token}` }
+            });
+            setStaffData(countRes.data);
+
+            // Fetch scholars details
+            const detailsRes = await axiosClient.get(`${API_URL}scholars-details/`, {
+                headers: { Authorization: `Bearer ${token}` }
+            });
+            setScholars(detailsRes.data);
+
+        } catch (err) {
+            console.error('Error fetching PhD data:', err);
+        } finally {
+            setLoading(false);
+        }
+    };
 
     const totalRegistered = scholars.length;
     const totalProduced = scholars.filter(s => s.status === 'Completed').length;
@@ -195,7 +137,6 @@ export default function PhdDetails(props) {
         staffPage * staffRowsPerPage + staffRowsPerPage
     );
 
-
     const totalStaffRegistered = staffData.reduce(
         (sum, item) => sum + item.phdScholarsRegistered,
         0
@@ -205,10 +146,10 @@ export default function PhdDetails(props) {
         0
     );
 
-
     return (
         <AppTheme {...props} themeComponents={xThemeComponents}>
             <CssBaseline enableColorScheme />
+            {loading && <Loader />}
 
             <Box sx={{ display: 'flex' }}>
                 <SideMenu />
@@ -222,19 +163,13 @@ export default function PhdDetails(props) {
                             ? `rgba(${theme.vars.palette.background.defaultChannel} / 1)`
                             : alpha(theme.palette.background.default, 1),
                         overflow: 'auto',
-                        minWidth: 0,  // ✔ prevents overflow without forcing shrink
+                        minWidth: 0,
                     })}
                 >
                     <Stack spacing={3} sx={{ alignItems: 'stretch', mx: { xs: 2, sm: 3, md: 4 }, pb: 5, mt: { xs: 8, md: 0 } }}>
                         <Header />
 
-
-                        {/* --------------------- */}
-                        {/* PhD Scholars Details Table */}
-                        {/* --------------------- */}
-
-
-                         {/* PhD Scholars Count Table */}
+                        {/* PhD Scholars Count Table */}
                         <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mt: 2 }}>
                             <Typography variant="h6" sx={{ fontWeight: 600, display: 'flex', alignItems: 'center', gap: 1 }}>
                                 PhD Scholars Count
@@ -312,8 +247,7 @@ export default function PhdDetails(props) {
                                                 </TableRow>
                                             ))
                                         )}
-                                        {/* ✔ TOTAL ROW BELOW PAGINATION */}
-                                        <TableRow >
+                                        <TableRow>
                                             <TableCell colSpan={3} sx={{ fontWeight: 'bold' }}>Total</TableCell>
                                             <TableCell sx={{ fontWeight: 'bold' }}>{totalStaffRegistered}</TableCell>
                                             <TableCell sx={{ fontWeight: 'bold' }}>{totalStaffProduced}</TableCell>
@@ -335,8 +269,8 @@ export default function PhdDetails(props) {
                                 }}
                             />
                         </Paper>
-                        
 
+                        {/* PhD Scholars Details Table */}
                         <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
                             <Typography variant="h6" sx={{ fontWeight: 600, display: 'flex', alignItems: 'center', gap: 1 }}>
                                 PhD Scholars Details
@@ -427,7 +361,6 @@ export default function PhdDetails(props) {
                                                 </TableRow>
                                             ))
                                         )}
-
                                     </TableBody>
                                 </Table>
                             </TableContainer>
@@ -445,9 +378,6 @@ export default function PhdDetails(props) {
                                 }}
                             />
                         </Paper>
-
-                       
-
                     </Stack>
                 </Box>
             </Box>

@@ -24,7 +24,9 @@ import SideMenu from '../components/SideMenu';
 import AppTheme from '../theme/AppTheme';
 import Typography from '@mui/material/Typography';
 import Button from '@mui/material/Button';
-import DownloadIcon from '@mui/icons-material/Download'; 
+import DownloadIcon from '@mui/icons-material/Download';
+import Loader from '../../components/MainComponents/Loader';
+import axiosClient from '../../utils/axiosClient';
 import {
   chartsCustomizations,
   datePickersCustomizations,
@@ -37,97 +39,38 @@ const xThemeComponents = {
   ...treeViewCustomizations,
 };
 
-// Sample publications data
-const initialPublications = [
-  {
-    id: 1,
-    name: 'Dr. John Doe',
-    publicationTitle: 'Deep Learning Approaches for Medical Image Analysis',
-    publicationLink: 'https://doi.org/10.1234/example1',
-    publicationType: 'Journal',
-    publicationMonthAndYear: 'January 2024'
-  },
-  {
-    id: 2,
-    name: 'Dr. Jane Smith',
-    publicationTitle: 'Solar Energy Optimization in Smart Grid Systems',
-    publicationLink: 'https://doi.org/10.1234/example2',
-    publicationType: 'Conference',
-    publicationMonthAndYear: 'March 2024'
-  },
-  {
-    id: 3,
-    name: 'Prof. Robert Wilson',
-    publicationTitle: 'Sustainable Building Materials: A Comprehensive Review',
-    publicationLink: 'https://doi.org/10.1234/example3',
-    publicationType: 'Journal',
-    publicationMonthAndYear: 'February 2024'
-  },
-  {
-    id: 4,
-    name: 'Dr. Emily Brown',
-    publicationTitle: 'Machine Learning for Traffic Flow Prediction',
-    publicationLink: 'https://doi.org/10.1234/example4',
-    publicationType: 'Conference',
-    publicationMonthAndYear: 'April 2024'
-  },
-  {
-    id: 5,
-    name: 'Dr. Michael Chen',
-    publicationTitle: 'Blockchain Technology in Supply Chain Management',
-    publicationLink: 'https://doi.org/10.1234/example5',
-    publicationType: 'Journal',
-    publicationMonthAndYear: 'May 2024'
-  },
-  {
-    id: 6,
-    name: 'Prof. Sarah Johnson',
-    publicationTitle: 'Advanced Filtration Systems for Water Treatment',
-    publicationLink: 'https://doi.org/10.1234/example6',
-    publicationType: 'Book Chapter',
-    publicationMonthAndYear: 'June 2024'
-  },
-  {
-    id: 7,
-    name: 'Dr. David Lee',
-    publicationTitle: 'IoT Applications in Precision Agriculture',
-    publicationLink: 'https://doi.org/10.1234/example7',
-    publicationType: 'Conference',
-    publicationMonthAndYear: 'January 2024'
-  },
-  {
-    id: 8,
-    name: 'Dr. Maria Garcia',
-    publicationTitle: 'Cybersecurity Frameworks for Banking Systems',
-    publicationLink: 'https://doi.org/10.1234/example8',
-    publicationType: 'Journal',
-    publicationMonthAndYear: 'July 2024'
-  },
-  {
-    id: 9,
-    name: 'Dr. John Doe',
-    publicationTitle: 'Neural Networks in Healthcare Diagnostics',
-    publicationLink: 'https://doi.org/10.1234/example9',
-    publicationType: 'Journal',
-    publicationMonthAndYear: 'August 2024'
-  },
-  {
-    id: 10,
-    name: 'Prof. Sarah Johnson',
-    publicationTitle: 'Environmental Impact of Water Purification Technologies',
-    publicationLink: 'https://doi.org/10.1234/example10',
-    publicationType: 'Conference',
-    publicationMonthAndYear: 'September 2024'
-  }
-];
+const API_URL = import.meta.env.VITE_API_URL + '/admin/publications/';
 
 export default function Publications(props: any) {
-  const [publications, setPublications] = React.useState(initialPublications);
+  const [publications, setPublications] = React.useState([]);
+  const [loading, setLoading] = React.useState(false);
   const [searchQuery, setSearchQuery] = React.useState('');
   const [page, setPage] = React.useState(0);
   const [rowsPerPage, setRowsPerPage] = React.useState(10);
   const [orderBy, setOrderBy] = React.useState('id');
   const [order, setOrder] = React.useState('asc');
+
+  // Fetch publications data from backend
+  React.useEffect(() => {
+    fetchPublications();
+  }, []);
+
+  const fetchPublications = async () => {
+    setLoading(true);
+    try {
+      const token = localStorage.getItem('access_token');
+      if (!token) return;
+
+      const res = await axiosClient.get(API_URL, {
+        headers: { Authorization: `Bearer ${token}` }
+      });
+      setPublications(res.data);
+    } catch (err) {
+      console.error('Error fetching publications:', err);
+    } finally {
+      setLoading(false);
+    }
+  };
 
   const handleSort = (property) => {
     const isAsc = orderBy === property && order === 'asc';
@@ -161,19 +104,22 @@ export default function Publications(props: any) {
   const getTypeColor = (type) => {
     switch (type.toLowerCase()) {
       case 'journal':
-        return 'primary';
-      case 'conference':
-        return 'success';
-      case 'book chapter':
-        return 'info';
+        return 'success';   // Green for Journal
+      case 'book':
+        return 'primary';   // Blue for Book
+      case 'article':
+        return 'warning';      // Light blue for Article
+
       default:
-        return 'default';
+        return 'default';   // Grey fallback
     }
   };
+
 
   return (
     <AppTheme {...props} themeComponents={xThemeComponents}>
       <CssBaseline enableColorScheme />
+      {loading && <Loader />}
 
       <Box sx={{ display: 'flex' }}>
         <SideMenu />
@@ -200,10 +146,6 @@ export default function Publications(props: any) {
             }}
           >
             <Header />
-
-            {/* --------------------- */}
-            {/*     YOUR CONTENT      */}
-            {/* --------------------- */}
 
             <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mt: 2 }}>
               <Typography variant="h6" sx={{ fontWeight: 600, display: 'flex', alignItems: 'center', gap: 1 }}>
@@ -298,6 +240,16 @@ export default function Publications(props: any) {
                     </TableRow>
                   </TableHead>
                   <TableBody>
+                    {/* 👉 Show "No data found" if empty */}
+                    {filteredPublications.length === 0 && !loading && (
+                      <TableRow>
+                        <TableCell colSpan={6} align="center" sx={{ py: 4 }}>
+                          <Typography variant="body1" sx={{ fontWeight: 600, opacity: 0.7 }}>
+                            No entries found
+                          </Typography>
+                        </TableCell>
+                      </TableRow>
+                    )}
                     {paginatedPublications.map((publication) => (
                       <TableRow key={publication.id} hover>
                         <TableCell>{publication.id}</TableCell>

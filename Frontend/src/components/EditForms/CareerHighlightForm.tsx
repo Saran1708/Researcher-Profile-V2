@@ -129,6 +129,7 @@ const CareerHighlightForm = () => {
             }
 
             setSuccessSnackbarOpen(true);
+            setExpanded(false);
         } catch (err) {
             console.error('Error saving career highlight:', err);
             setSnackbarMsg('Error saving data');

@@ -5,11 +5,17 @@ const PrivateRoute = ({ children }: { children: JSX.Element }) => {
   const token = localStorage.getItem("access_token");
   const role = localStorage.getItem("role"); // "Admin" or "Staff"
 
+  // Not logged in
   if (!token || !role) {
     return <Navigate to="/login" replace />;
   }
 
-  // Staff and Admin both allowed here
+  // Explicitly allow only Staff
+  if (role !== "Staff") {
+    return <Navigate to="/login" replace />; 
+    // OR "/login", depending on your flow
+  }
+
   return children;
 };
 

@@ -131,6 +131,7 @@ const CollaborationForm = () => {
       }
 
       setSuccessSnackbarOpen(true);
+      setExpanded(false);
     } catch (err) {
       console.error('Error saving collaborations:', err);
       setSnackbarMsg('Error saving data');

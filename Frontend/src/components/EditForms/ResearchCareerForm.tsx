@@ -129,6 +129,7 @@ const ResearchCareerForm = () => {
       }
 
       setSuccessSnackbarOpen(true);
+      setExpanded(false);
     } catch (err) {
       console.error('Error saving research career:', err);
       setSnackbarMsg('Error saving data');

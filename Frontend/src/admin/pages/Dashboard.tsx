@@ -11,6 +11,8 @@ import AppNavbar from '../components/AppNavbar';
 import Header from '../components/Header';
 import SideMenu from '../components/SideMenu';
 import AppTheme from '../theme/AppTheme';
+import Loader from '../../components/MainComponents/Loader';
+import axiosClient from '../../utils/axiosClient';
 import {
   chartsCustomizations,
   datePickersCustomizations,
@@ -48,79 +50,87 @@ const xThemeComponents = {
   ...treeViewCustomizations,
 };
 
-export default function Dashboard(props: { 
-  disableCustomTheme?: boolean;
-  researchAreas?: number;
-  researchIDs?: number;
-  publications?: number;
-  fundings?: number;
-  conferences?: number;
-  phdSupervisions?: number;
-  adminPositions?: number;
-  honoraryPositions?: number;
-  resourcePerson?: number;
-  collaborations?: number;
-  consultancies?: number;
-}) {
-  const {
-    researchAreas = 2,
-    researchIDs = 4,
-    publications = 5,
-    fundings = 6,
-    conferences = 6,
-    phdSupervisions = 300,
-    adminPositions = 45,
-    honoraryPositions = 4,
-    resourcePerson = 35,
-    collaborations = 665,
-    consultancies = 24,
-  } = props;
+const API_URL = import.meta.env.VITE_API_URL + '/admin/dashboard/';
 
+export default function Dashboard(props: { disableCustomTheme?: boolean }) {
   const [selectedDepartment, setSelectedDepartment] = React.useState('Overall');
+  const [loading, setLoading] = React.useState(false);
+  
+  // Stats state
+  const [stats, setStats] = React.useState({
+    researchAreas: 0,
+    researchIDs: 0,
+    publications: 0,
+    fundings: 0,
+    conferences: 0,
+    phdSupervisions: 0,
+    adminPositions: 0,
+    honoraryPositions: 0,
+    resourcePerson: 0,
+    collaborations: 0,
+    consultancies: 0,
+  });
+
+  // Charts data state
+  const [publicationsYearlyData, setPublicationsYearlyData] = React.useState<Array<{year: string, count: number}>>([]);
+  const [researchDistribution, setResearchDistribution] = React.useState<Array<{label: string, value: number}>>([]);
+  const [fundingTrend, setFundingTrend] = React.useState<Array<{year: string, amount: number}>>([]);
+  const [supervisionData, setSupervisionData] = React.useState<Array<{category: string, count: number}>>([]);
 
   const handleDepartmentChange = (event: any) => {
     setSelectedDepartment(event.target.value);
   };
 
-  // Sample data for charts - replace with actual data based on selectedDepartment
-  const publicationsYearlyData = [
-    { year: '2020', count: 15 },
-    { year: '2021', count: 23 },
-    { year: '2022', count: 31 },
-    { year: '2023', count: 28 },
-    { year: '2024', count: 35 },
-  ];
+  // Fetch all dashboard data
+  const fetchDashboardData = async (department: string) => {
+    setLoading(true);
+    try {
+      const token = localStorage.getItem('access_token');
+      if (!token) {
+        console.error('No access token found');
+        return;
+      }
 
-  const researchDistribution = [
-    { label: 'Publications', value: publications },
-    { label: 'Conferences', value: conferences },
-    { label: 'Collaborations', value: collaborations },
-    { label: 'Consultancies', value: consultancies },
-  ];
+      const config = {
+        headers: { Authorization: `Bearer ${token}` },
+        params: { department }
+      };
 
-  const fundingTrend = [
-    { month: 'Jan', amount: 50000 },
-    { month: 'Feb', amount: 65000 },
-    { month: 'Mar', amount: 45000 },
-    { month: 'Apr', amount: 80000 },
-    { month: 'May', amount: 70000 },
-    { month: 'Jun', amount: 90000 },
-  ];
+      // Fetch all data in parallel
+      const [statsRes, publicationsRes, distributionRes, fundingRes, phdRes] = await Promise.all([
+        axiosClient.get(`${API_URL}stats/`, config),
+        axiosClient.get(`${API_URL}publications-trend/`, config),
+        axiosClient.get(`${API_URL}research-distribution/`, config),
+        axiosClient.get(`${API_URL}funding-trend/`, config),
+        axiosClient.get(`${API_URL}phd-status/`, config),
+      ]);
 
-  const supervisionData = [
-    { category: 'Ongoing', count: 12 },
-    { category: 'Completed', count: 8 },
-    { category: 'Submitted', count: 5 },
-  ];
+      setStats(statsRes.data);
+      setPublicationsYearlyData(publicationsRes.data);
+      setResearchDistribution(distributionRes.data);
+      setFundingTrend(fundingRes.data);
+      setSupervisionData(phdRes.data);
+
+    } catch (error) {
+      console.error('Error fetching dashboard data:', error);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  // Fetch data on mount and when department changes
+  React.useEffect(() => {
+    fetchDashboardData(selectedDepartment);
+  }, [selectedDepartment]);
 
   return (
     <AppTheme {...props} themeComponents={xThemeComponents}>
       <CssBaseline enableColorScheme />
+      {loading && <Loader />}
+      
       <Box sx={{ display: 'flex' }}>
-        
         <SideMenu />
         <AppNavbar />
-        
 
         {/* Main content */}
         <Box
@@ -241,7 +251,7 @@ export default function Dashboard(props: {
               {/* Research Areas */}
               <Card
                 sx={{
-                   mt: 2,
+                  mt: 2,
                   borderLeft: 4,
                   borderColor: 'primary.main',
                   borderRadius: 2,
@@ -262,7 +272,7 @@ export default function Dashboard(props: {
                     RESEARCH AREAS
                   </Typography>
                   <Typography variant="h6" fontWeight={700} sx={{ fontSize: { xs: '1.2rem', sm: '1.5rem' }, mt: 0.5 }}>
-                    {researchAreas}
+                    {stats.researchAreas}
                   </Typography>
                 </CardContent>
                 <SchoolIcon sx={{ fontSize: { xs: 25, sm: 30 }, color: 'text.disabled', ml: 1 }} />
@@ -292,7 +302,7 @@ export default function Dashboard(props: {
                     RESEARCH IDs
                   </Typography>
                   <Typography variant="h6" fontWeight={700} sx={{ fontSize: { xs: '1.2rem', sm: '1.5rem' }, mt: 0.5 }}>
-                    {researchIDs}
+                    {stats.researchIDs}
                   </Typography>
                 </CardContent>
                 <FingerprintIcon sx={{ fontSize: { xs: 25, sm: 30 }, color: 'text.disabled', ml: 1 }} />
@@ -322,7 +332,7 @@ export default function Dashboard(props: {
                     PUBLICATIONS
                   </Typography>
                   <Typography variant="h6" fontWeight={700} sx={{ fontSize: { xs: '1.2rem', sm: '1.5rem' }, mt: 0.5 }}>
-                    {publications}
+                    {stats.publications}
                   </Typography>
                 </CardContent>
                 <MenuBookIcon sx={{ fontSize: { xs: 25, sm: 30 }, color: 'text.disabled', ml: 1 }} />
@@ -352,7 +362,7 @@ export default function Dashboard(props: {
                     FUNDINGS
                   </Typography>
                   <Typography variant="h6" fontWeight={700} sx={{ fontSize: { xs: '1.2rem', sm: '1.5rem' }, mt: 0.5 }}>
-                    {fundings}
+                    {stats.fundings}
                   </Typography>
                 </CardContent>
                 <AccountBalanceIcon sx={{ fontSize: { xs: 25, sm: 30 }, color: 'text.disabled', ml: 1 }} />
@@ -382,7 +392,7 @@ export default function Dashboard(props: {
                     CONFERENCES
                   </Typography>
                   <Typography variant="h6" fontWeight={700} sx={{ fontSize: { xs: '1.2rem', sm: '1.5rem' }, mt: 0.5 }}>
-                    {conferences}
+                    {stats.conferences}
                   </Typography>
                 </CardContent>
                 <EventIcon sx={{ fontSize: { xs: 25, sm: 30 }, color: 'text.disabled', ml: 1 }} />
@@ -412,7 +422,7 @@ export default function Dashboard(props: {
                     PhD SUPERVISIONS
                   </Typography>
                   <Typography variant="h6" fontWeight={700} sx={{ fontSize: { xs: '1.2rem', sm: '1.5rem' }, mt: 0.5 }}>
-                    {phdSupervisions}
+                    {stats.phdSupervisions}
                   </Typography>
                 </CardContent>
                 <SupervisorAccountIcon sx={{ fontSize: { xs: 25, sm: 30 }, color: 'text.disabled', ml: 1 }} />
@@ -442,7 +452,7 @@ export default function Dashboard(props: {
                     ADMIN POSITIONS
                   </Typography>
                   <Typography variant="h6" fontWeight={700} sx={{ fontSize: { xs: '1.2rem', sm: '1.5rem' }, mt: 0.5 }}>
-                    {adminPositions}
+                    {stats.adminPositions}
                   </Typography>
                 </CardContent>
                 <AdminPanelSettingsIcon sx={{ fontSize: { xs: 25, sm: 30 }, color: 'text.disabled', ml: 1 }} />
@@ -472,7 +482,7 @@ export default function Dashboard(props: {
                     HONORARY POSITIONS
                   </Typography>
                   <Typography variant="h6" fontWeight={700} sx={{ fontSize: { xs: '1.2rem', sm: '1.5rem' }, mt: 0.5 }}>
-                    {honoraryPositions}
+                    {stats.honoraryPositions}
                   </Typography>
                 </CardContent>
                 <EmojiEventsIcon sx={{ fontSize: { xs: 25, sm: 30 }, color: 'text.disabled', ml: 1 }} />
@@ -502,7 +512,7 @@ export default function Dashboard(props: {
                     RESOURCE PERSON
                   </Typography>
                   <Typography variant="h6" fontWeight={700} sx={{ fontSize: { xs: '1.2rem', sm: '1.5rem' }, mt: 0.5 }}>
-                    {resourcePerson}
+                    {stats.resourcePerson}
                   </Typography>
                 </CardContent>
                 <PersonIcon sx={{ fontSize: { xs: 25, sm: 30 }, color: 'text.disabled', ml: 1 }} />
@@ -532,7 +542,7 @@ export default function Dashboard(props: {
                     COLLABORATIONS
                   </Typography>
                   <Typography variant="h6" fontWeight={700} sx={{ fontSize: { xs: '1.2rem', sm: '1.5rem' }, mt: 0.5 }}>
-                    {collaborations}
+                    {stats.collaborations}
                   </Typography>
                 </CardContent>
                 <HandshakeIcon sx={{ fontSize: { xs: 25, sm: 30 }, color: 'text.disabled', ml: 1 }} />
@@ -562,7 +572,7 @@ export default function Dashboard(props: {
                     CONSULTANCIES
                   </Typography>
                   <Typography variant="h6" fontWeight={700} sx={{ fontSize: { xs: '1.2rem', sm: '1.5rem' }, mt: 0.5 }}>
-                    {consultancies}
+                    {stats.consultancies}
                   </Typography>
                 </CardContent>
                 <BusinessCenterIcon sx={{ fontSize: { xs: 25, sm: 30 }, color: 'text.disabled', ml: 1 }} />
@@ -585,7 +595,7 @@ export default function Dashboard(props: {
               {/* Publications Trend */}
               <Paper sx={{ mt: 3, p: { xs: 2, sm: 3 }, borderRadius: 2, boxShadow: 2 }}>
                 <Typography variant="h6" fontWeight={600} mb={2} sx={{ fontSize: { xs: '0.9rem', sm: '1.10rem' } }}>
-                  Publications Trend (Yearly)
+                  Publications Trend (Last 5 Years)
                 </Typography>
                 <Box sx={{ width: '100%', overflowX: 'auto' }}>
                   <BarChart
@@ -633,11 +643,11 @@ export default function Dashboard(props: {
               {/* Funding Trend */}
               <Paper sx={{mt: 3, p: { xs: 2, sm: 3 }, borderRadius: 2, boxShadow: 2 }}>
                 <Typography variant="h6" fontWeight={600} mb={2} sx={{ fontSize: { xs: '0.9rem', sm: '1.10rem' } }}>
-                  Funding Trend (Monthly)
+                  Funding Trend (Last 5 Years)
                 </Typography>
                 <Box sx={{ width: '100%', overflowX: 'auto' }}>
                   <LineChart
-                    xAxis={[{ scaleType: 'point', data: fundingTrend.map(d => d.month) }]}
+                    xAxis={[{ scaleType: 'point', data: fundingTrend.map(d => d.year) }]}
                     series={[
                       {
                         data: fundingTrend.map(d => d.amount),

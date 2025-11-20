@@ -147,6 +147,7 @@ const AdministrationPositionForm = () => {
             }
 
             setSuccessSnackbarOpen(true);
+            setExpanded(false);
         } catch (err) {
             console.error('Error saving administrative positions:', err);
             setSnackbarMsg('Error saving administrative positions');

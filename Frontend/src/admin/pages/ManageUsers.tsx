@@ -38,11 +38,14 @@ import FormLabel from '@mui/material/FormLabel';
 import Select from '@mui/material/Select';
 
 
+
 import {
   chartsCustomizations,
   datePickersCustomizations,
   treeViewCustomizations,
 } from '../theme/customizations';
+import Loader from '../../components/MainComponents/Loader';
+import axiosClient from '../../utils/axiosClient';
 
 const xThemeComponents = {
   ...chartsCustomizations,
@@ -50,30 +53,7 @@ const xThemeComponents = {
   ...treeViewCustomizations,
 };
 
-// Sample data
-const initialUsers = [
-  {
-    id: 1,
-    email: 'john.doe@mcc.edu.in',
-    passwordChanged: true,
-    role: 'Admin',
-    lastLogin: '2024-11-18 14:30:45'
-  },
-  {
-    id: 2,
-    email: 'jane.smith@mcc.edu.in',
-    passwordChanged: false,
-    role: 'Staff',
-    lastLogin: '2024-11-17 09:15:22'
-  },
-  {
-    id: 3,
-    email: 'robert.wilson@mcc.edu.in',
-    passwordChanged: true,
-    role: 'Staff',
-    lastLogin: '2024-11-16 16:45:10'
-  }
-];
+const API_URL = import.meta.env.VITE_API_URL + '/admin/users/';
 
 export default function ManageUsers(props: any) {
   const [openAddUser, setOpenAddUser] = React.useState(false);
@@ -81,17 +61,43 @@ export default function ManageUsers(props: any) {
   const [deleteUserId, setDeleteUserId] = React.useState(null);
   const [emailsText, setEmailsText] = React.useState('');
   const [selectedRole, setSelectedRole] = React.useState('Staff');
-  const [users, setUsers] = React.useState(initialUsers);
+  const [users, setUsers] = React.useState([]);
   const [searchQuery, setSearchQuery] = React.useState('');
   const [page, setPage] = React.useState(0);
   const [rowsPerPage, setRowsPerPage] = React.useState(10);
   const [orderBy, setOrderBy] = React.useState('id');
   const [order, setOrder] = React.useState('asc');
+  const [loading, setLoading] = React.useState(false);
 
   const [snackbarOpen, setSnackbarOpen] = React.useState(false);
   const [snackbarMsg, setSnackbarMsg] = React.useState('');
   const [successSnackbarOpen, setSuccessSnackbarOpen] = React.useState(false);
   const [successMsg, setSuccessMsg] = React.useState('');
+
+  // Fetch users on component mount
+  React.useEffect(() => {
+    fetchUsers();
+  }, []);
+
+  const fetchUsers = async () => {
+    setLoading(true);
+    try {
+      const token = localStorage.getItem('access_token');
+      if (!token) return;
+
+      const res = await axiosClient.get(API_URL, {
+        headers: { Authorization: `Bearer ${token}` }
+      });
+
+      setUsers(res.data);
+    } catch (err) {
+      console.error('Error fetching users:', err);
+      setSnackbarMsg('Error fetching users');
+      setSnackbarOpen(true);
+    } finally {
+      setLoading(false);
+    }
+  };
 
   const handleOpenAddUser = () => setOpenAddUser(true);
   const handleCloseAddUser = () => {
@@ -100,46 +106,55 @@ export default function ManageUsers(props: any) {
     setSelectedRole('Staff');
   };
 
-  const handleAddUsers = () => {
+  const handleAddUsers = async () => {
     const emails = emailsText.split('\n').filter(e => e.trim() !== '');
-    const invalidEmails = [];
-    const validEmails = [];
 
-    emails.forEach(email => {
-      const trimmedEmail = email.trim();
-      if (!trimmedEmail.endsWith('@mcc.edu.in')) {
-        invalidEmails.push(trimmedEmail);
-      } else if (!/^[^\s@]+@mcc\.edu\.in$/.test(trimmedEmail)) {
-        invalidEmails.push(trimmedEmail);
-      } else {
-        validEmails.push(trimmedEmail);
-      }
-    });
-
-    if (invalidEmails.length > 0) {
-      setSnackbarMsg(`Invalid emails: ${invalidEmails.join(', ')}. All emails must end with @mcc.edu.in`);
-      setSnackbarOpen(true);
-      return;
-    }
-
-    if (validEmails.length === 0) {
+    if (emails.length === 0) {
       setSnackbarMsg('Please enter at least one valid email address');
       setSnackbarOpen(true);
       return;
     }
 
-    const newUsers = validEmails.map((email, idx) => ({
-      id: users.length + idx + 1,
-      email,
-      passwordChanged: false,
-      role: selectedRole,
-      lastLogin: 'Never'
-    }));
+    setLoading(true);
 
-    setUsers([...users, ...newUsers]);
-    setSuccessMsg(`Successfully added ${validEmails.length} user(s)`);
-    setSuccessSnackbarOpen(true);
-    handleCloseAddUser();
+    try {
+      const token = localStorage.getItem('access_token');
+      if (!token) return;
+
+      const res = await axiosClient.post(
+        API_URL,
+        {
+          emails: emailsText,
+          role: selectedRole
+        },
+        {
+          headers: { Authorization: `Bearer ${token}` }
+        }
+      );
+
+      // Refresh users list
+      await fetchUsers();
+
+      setSuccessMsg(res.data.message);
+      setSuccessSnackbarOpen(true);
+      handleCloseAddUser();
+
+      // Show warning if some emails already existed
+      if (res.data.warning) {
+        setTimeout(() => {
+          setSnackbarMsg(res.data.warning);
+          setSnackbarOpen(true);
+        }, 1000);
+      }
+
+    } catch (err) {
+      console.error('Error adding users:', err);
+      const errorMsg = err.response?.data?.error || 'Error adding users';
+      setSnackbarMsg(errorMsg);
+      setSnackbarOpen(true);
+    } finally {
+      setLoading(false);
+    }
   };
 
   const handleDeleteClick = (id) => {
@@ -147,12 +162,32 @@ export default function ManageUsers(props: any) {
     setOpenDeleteConfirm(true);
   };
 
-  const handleConfirmDelete = () => {
-    setUsers(users.filter(u => u.id !== deleteUserId));
-    setSuccessMsg('User deleted successfully');
-    setSuccessSnackbarOpen(true);
-    setOpenDeleteConfirm(false);
-    setDeleteUserId(null);
+  const handleConfirmDelete = async () => {
+    setLoading(true);
+
+    try {
+      const token = localStorage.getItem('access_token');
+      if (!token) return;
+
+      await axiosClient.delete(`${API_URL}${deleteUserId}/`, {
+        headers: { Authorization: `Bearer ${token}` }
+      });
+
+      // Refresh users list
+      await fetchUsers();
+
+      setSuccessMsg('User deleted successfully');
+      setSuccessSnackbarOpen(true);
+      setOpenDeleteConfirm(false);
+      setDeleteUserId(null);
+
+    } catch (err) {
+      console.error('Error deleting user:', err);
+      setSnackbarMsg('Error deleting user');
+      setSnackbarOpen(true);
+    } finally {
+      setLoading(false);
+    }
   };
 
   const handleSort = (property) => {
@@ -190,6 +225,7 @@ export default function ManageUsers(props: any) {
   return (
     <AppTheme {...props} themeComponents={xThemeComponents}>
       <CssBaseline enableColorScheme />
+      {loading && <Loader />}
 
       <Box sx={{ display: 'flex' }}>
         <SideMenu />
@@ -343,13 +379,16 @@ export default function ManageUsers(props: any) {
                         </TableCell>
                         <TableCell>{user.lastLogin}</TableCell>
                         <TableCell align="center">
-                          <IconButton
-                            color="error"
-                            onClick={() => handleDeleteClick(user.id)}
-                            size="small"
-                          >
-                            <DeleteIcon />
-                          </IconButton>
+                          {user.email !== "admin@mcc.edu.in" && (
+                            <IconButton
+                              color="error"
+                              onClick={() => handleDeleteClick(user.id)}
+                              size="small"
+                            >
+                              <DeleteIcon />
+                            </IconButton>
+                          )}
+
                         </TableCell>
                       </TableRow>
                     ))}
@@ -389,8 +428,8 @@ export default function ManageUsers(props: any) {
                     value={emailsText}
                     onChange={(e) => setEmailsText(e.target.value)}
                     placeholder={
-  "Enter one email per line\nexample:\njohn@mcc.edu.in\nsarah@mcc.edu.in"
-}
+                      "Enter one email per line\nexample:\njohn@mcc.edu.in\nsarah@mcc.edu.in"
+                    }
 
                     style={{
                       width: '100%',
@@ -424,6 +463,7 @@ export default function ManageUsers(props: any) {
                 <Button
                   onClick={handleCloseAddUser}
                   sx={{ textTransform: 'none', borderRadius: 2 }}
+                  disabled={loading}
                 >
                   Cancel
                 </Button>
@@ -431,6 +471,7 @@ export default function ManageUsers(props: any) {
                   onClick={handleAddUsers}
                   variant="contained"
                   sx={{ textTransform: 'none', borderRadius: 2, px: 3 }}
+                  disabled={loading}
                 >
                   Add Users
                 </Button>
@@ -453,6 +494,7 @@ export default function ManageUsers(props: any) {
                 <Button
                   onClick={() => setOpenDeleteConfirm(false)}
                   sx={{ textTransform: 'none', borderRadius: 2 }}
+                  disabled={loading}
                 >
                   Cancel
                 </Button>
@@ -461,6 +503,7 @@ export default function ManageUsers(props: any) {
                   color="error"
                   variant="contained"
                   sx={{ textTransform: 'none', borderRadius: 2, px: 3 }}
+                  disabled={loading}
                 >
                   Delete
                 </Button>
