@@ -1,6 +1,7 @@
 from django.db import models
 from django.contrib.auth.models import AbstractBaseUser, BaseUserManager, PermissionsMixin
 from django.conf import settings
+from django.utils.text import slugify
 
 # User Table
 
@@ -24,13 +25,26 @@ class User(AbstractBaseUser, PermissionsMixin):
     email = models.EmailField(unique=True)
     password_changed = models.BooleanField(default=False)
     role = models.CharField(max_length=1000)
+    slug = models.SlugField(max_length=255, unique=True, blank=True, null=True)  # 🆕 NEW FIELD
 
     is_active = models.BooleanField(default=True)
-    is_staff = models.BooleanField(default=False)  # For admin access
+    is_staff = models.BooleanField(default=False)
 
     objects = UserManager()
 
     USERNAME_FIELD = 'email'
+
+    def save(self, *args, **kwargs):
+        # Auto-generate slug from email if not exists
+        if not self.slug:
+            base_slug = slugify(self.email.split('@')[0])
+            slug = base_slug
+            counter = 1
+            while User.objects.filter(slug=slug).exists():
+                slug = f"{base_slug}-{counter}"
+                counter += 1
+            self.slug = slug
+        super().save(*args, **kwargs)
 
     def __str__(self):
         return self.email
@@ -192,7 +206,7 @@ class ProfileTracker(models.Model):
 
     def __str__(self):
         return f"{self.user.email} - Profile Tracker"
-
+    
     @property
     def is_profile_complete(self):
         """

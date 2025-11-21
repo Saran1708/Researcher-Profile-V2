@@ -50,6 +50,9 @@ urlpatterns = [
     path('profile/status/', views.profile_completion_status, name='profile_status'),
 
 
+    path('public/profile/<slug:slug>/', views.public_profile_view, name='public-profile'),
 ]
+
+
 
 

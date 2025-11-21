@@ -4,6 +4,9 @@ from rest_framework import status
 from rest_framework.parsers import MultiPartParser, FormParser
 from rest_framework.decorators import api_view, permission_classes, parser_classes
 from rest_framework.permissions import IsAuthenticated
+from django.http import JsonResponse
+from django.views.decorators.http import require_http_methods
+from django.views.decorators.csrf import csrf_exempt
 
 from .models import (
     User, 
@@ -900,3 +903,161 @@ def profile_completion_status(request):
     }
 
     return Response(data, status=status.HTTP_200_OK)
+
+
+
+@require_http_methods(["GET"])
+@csrf_exempt
+def public_profile_view(request, slug):
+    """
+    🌐 PUBLIC ENDPOINT - No authentication required
+    Returns complete profile data if profile is complete
+    """
+    try:
+        # Find user by slug
+        user = User.objects.get(slug=slug)
+        
+        # Check if profile is complete
+        try:
+            profile_tracker = ProfileTracker.objects.get(user=user)
+            
+            if not profile_tracker.is_profile_complete:
+                return JsonResponse({
+                    'error': 'Profile not available',
+                    'message': 'This profile is not yet complete',
+                    'is_complete': False
+                }, status=404)
+                
+        except ProfileTracker.DoesNotExist:
+            return JsonResponse({
+                'error': 'Profile not available',
+                'message': 'Profile tracker not found',
+                'is_complete': False
+            }, status=404)
+        
+        # ✅ Profile is complete - fetch all data
+        
+        # Staff Details
+        staff_details = Staff_Details.objects.filter(email=user).first()
+        
+        if not staff_details:
+            return JsonResponse({
+                'error': 'Profile data incomplete',
+                'message': 'Staff details not found'
+            }, status=404)
+        
+        # Build profile picture URL
+        profile_pic_url = ''
+        if staff_details.profile_picture:
+            profile_pic_url = request.build_absolute_uri(staff_details.profile_picture.url)
+        
+        # Fetch all related data
+        educations = list(Education.objects.filter(email=user).values(
+            'id', 'degree', 'college', 'start_year', 'end_year'
+        ))
+        
+        research_areas = list(Research.objects.filter(email=user).values(
+            'id', 'research_areas'
+        ))
+        
+        research_ids = list(Research_ID.objects.filter(email=user).values(
+            'id', 'research_title', 'research_link'
+        ))
+        
+        fundings = list(Funding.objects.filter(email=user).values(
+            'id', 'project_title', 'funding_agency', 'funding_month_and_year',
+            'funding_amount', 'funding_status'
+        ))
+        
+        publications = list(Publication.objects.filter(email=user).values(
+            'id', 'publication_title', 'publication_link', 'publication_type',
+            'publication_month_and_year'
+        ))
+        
+        admin_positions = list(Administration_Position.objects.filter(email=user).values(
+            'id', 'administration_position', 'administration_year_from', 'administration_year_to'
+        ))
+        
+        honorary_positions = list(Honary_Position.objects.filter(email=user).values(
+            'id', 'honary_position', 'honary_year'
+        ))
+        
+        conferences = list(Conferenece.objects.filter(email=user).values(
+            'id', 'paper_title', 'conference_details', 'conference_type',
+            'conference_isbn', 'conference_year'
+        ))
+        
+        phd_supervisions = list(Phd.objects.filter(email=user).values(
+            'id', 'phd_name', 'phd_topic', 'phd_status', 'phd_years_of_completion'
+        ))
+        
+        resource_persons = list(Resource_Person.objects.filter(email=user).values(
+            'id', 'resource_topic', 'resource_department', 'resource_date'
+        ))
+        
+        collaborations = list(Collaboration.objects.filter(email=user).values(
+            'id', 'collaboration_details'
+        ))
+        
+        consultancies = list(Consultancy.objects.filter(email=user).values(
+            'id', 'consultancy_details'
+        ))
+        
+        career_highlights = list(Career_Highlight.objects.filter(email=user).values(
+            'id', 'career_highlight_details'
+        ))
+        
+        research_career = list(Research_Career.objects.filter(email=user).values(
+            'id', 'research_career_details'
+        ))
+        
+        # Build response
+        response_data = {
+            'basic_details': {
+                'name': f"{staff_details.prefix} {staff_details.name}".strip(),
+                'prefix': staff_details.prefix,
+                'department': staff_details.department,
+                'institution': staff_details.institution,
+                'phone': staff_details.phone,
+                'email': user.email,
+                'address': staff_details.address,
+                'website': staff_details.website or '',
+                'profile_picture': profile_pic_url,
+                'slug': user.slug
+            },
+            'educations': educations,
+            'research_areas': research_areas,
+            'research_ids': research_ids,
+            'fundings': fundings,
+            'publications': publications,
+            'admin_positions': admin_positions,
+            'honorary_positions': honorary_positions,
+            'conferences': conferences,
+            'phd_supervisions': phd_supervisions,
+            'resource_persons': resource_persons,
+            'collaborations': collaborations,
+            'consultancies': consultancies,
+            'career_highlights': career_highlights,
+            'research_career': research_career,
+            'profile_status': {
+                'is_complete': True,
+                'profile_details_completed': profile_tracker.profile_details_completed,
+                'educational_details_completed': profile_tracker.educational_details_completed,
+                'research_career_completed': profile_tracker.research_career_completed,
+                'career_highlights_completed': profile_tracker.career_highlights_completed
+            }
+        }
+        
+        return JsonResponse(response_data, status=200)
+        
+    except User.DoesNotExist:
+        return JsonResponse({
+            'error': 'User not found',
+            'message': 'No user exists with this profile URL'
+        }, status=404)
+    
+    except Exception as e:
+        return JsonResponse({
+            'error': 'Server error',
+            'message': str(e)
+        }, status=500)
