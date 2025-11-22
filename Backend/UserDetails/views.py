@@ -909,10 +909,7 @@ def profile_completion_status(request):
 @require_http_methods(["GET"])
 @csrf_exempt
 def public_profile_view(request, slug):
-    """
-    🌐 PUBLIC ENDPOINT - No authentication required
-    Returns complete profile data if profile is complete
-    """
+   
     try:
         # Find user by slug
         user = User.objects.get(slug=slug)

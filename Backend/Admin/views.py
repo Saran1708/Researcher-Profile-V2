@@ -142,19 +142,19 @@ class PhdScholarsCountView(APIView):
         staff_list = Staff_Details.objects.all()
         result = []
 
-        for staff in staff_list:
-            # Get all PhD entries for this staff
+        for idx, staff in enumerate(staff_list, start=1):
+
             phd_qs = Phd.objects.filter(email=staff.email)
 
             produced_count = phd_qs.filter(phd_status='Completed').count()
             registered_count = phd_qs.exclude(phd_status='Completed').count()
 
-            
             if registered_count == 0 and produced_count == 0:
                 continue
 
             result.append({
-                'id': staff.id,
+                'id': idx,   # NOW AUTO INCREMENTS ✔
+                "slug": staff.email.slug,
                 'staffName': f"{staff.prefix} {staff.name}",
                 'department': staff.department,
                 'phdScholarsRegistered': registered_count,
@@ -162,6 +162,7 @@ class PhdScholarsCountView(APIView):
             })
 
         return Response(result, status=status.HTTP_200_OK)
+
 
 
 
@@ -183,12 +184,14 @@ class PhdScholarsDetailsView(APIView):
             if staff_details:
                 staff_name = f"{staff_details.prefix} {staff_details.name}"
                 department = staff_details.department
+                slug = phd.email.slug  
             else:
                 staff_name = phd.email.email
                 department = "N/A"
 
             result.append({
                 'id': idx,
+                'slug': slug,
                 'staffName': staff_name,
                 'department': department,
                 'scholarName': phd.phd_name,
@@ -241,6 +244,7 @@ class FundingDetailsView(APIView):
             
             result.append({
                 'id': idx,
+                'slug': funding.email.slug,
                 'staffName': staff_name,
                 'projectTitle': funding.project_title,
                 'fundingAgency': funding.funding_agency,
@@ -270,6 +274,7 @@ class PublicationListView(APIView):
 
             data.append({
                 "id": pub.id,
+                "slug": pub.email.slug,
                 "name": staff_name,
                 "publicationTitle": pub.publication_title,
                 "publicationLink": pub.publication_link,
@@ -286,17 +291,21 @@ class ResearchIDListView(APIView):
     def get(self, request):
         research_ids = Research_ID.objects.select_related('email').all()
 
-        data = [
-            {
-                "id": rid.id,
-                "name": Staff_Details.objects.get(email=rid.email).name if Staff_Details.objects.filter(email=rid.email).exists() else rid.email.email,
+        data = []
+
+        for idx, rid in enumerate(research_ids, start=1):
+            staff = Staff_Details.objects.filter(email=rid.email).first()
+            name = staff.name if staff else rid.email.email
+
+            data.append({
+                "id": idx,                           
+                "slug": rid.email.slug ,        
+                "name": name,
                 "researchTitle": rid.research_title,
                 "researchLink": rid.research_link
-            }
-            for rid in research_ids
-        ]
+            })
 
-        return Response(data)
+        return Response(data, status=200)
 
 
 
@@ -305,33 +314,34 @@ class ResearchAreasListView(APIView):
 
     def get(self, request):
         try:
-            # Fetch distinct staff emails
+            # Distinct user IDs used in Research table
             staff_emails = Research.objects.values_list("email", flat=True).distinct()
 
             response_data = []
 
-            for email_id in staff_emails:
-                entries = Research.objects.filter(email_id=email_id)
+            for idx, email_id in enumerate(staff_emails, start=1):
+                entries = Research.objects.filter(email_id=email_id).select_related("email")
 
                 if not entries.exists():
                     continue
 
-                staff = entries.first().email  # the User object
+                user = entries.first().email  # User object
 
-                # Get staff name from Staff_Details
-                name = Staff_Details.objects.get(email=staff).name \
-                       if Staff_Details.objects.filter(email=staff).exists() \
-                       else staff.email
+                # Get staff name if exists
+                staff = Staff_Details.objects.filter(email=user).first()
+                name = staff.name if staff else user.email
 
+                # Combine research areas
                 combined_areas = ", ".join(e.research_areas for e in entries)
 
                 response_data.append({
-                    "id": entries.first().id,
+                    "id": idx,                     
+                    "slug": user.slug ,       
                     "name": name,
                     "researchAreas": combined_areas
                 })
 
-            return Response(response_data)
+            return Response(response_data, status=200)
 
         except Exception as e:
             print("Error:", e)

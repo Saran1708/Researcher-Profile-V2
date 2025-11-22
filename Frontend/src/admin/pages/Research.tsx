@@ -26,6 +26,7 @@ import OpenInNewIcon from '@mui/icons-material/OpenInNew';
 import Loader from '../../components/MainComponents/Loader';
 import axiosClient from '../../utils/axiosClient';
 import Button from '@mui/material/Button';
+import { Link as RouterLink } from 'react-router-dom';
 
 import {
   chartsCustomizations,
@@ -90,6 +91,7 @@ export default function Research(props) {
       // Normalize research IDs
       const normalizedIds = idsRes.data.map(item => ({
         id: item.id,
+        slug: item.slug ?? item.userSlug ?? '',
         name: item.name ?? item.staffName ?? item.email ?? '',
         research_title: item.research_title ?? item.researchTitle ?? '',
         research_link: item.research_link ?? item.researchLink ?? ''
@@ -98,6 +100,7 @@ export default function Research(props) {
       // Normalize research areas
       const normalizedAreas = areasRes.data.map(item => ({
         id: item.id ?? item.email_id,
+        slug: item.slug ?? item.userSlug ?? '',
         name: item.name ?? item.staffName ?? item.email ?? '',
         research_areas: item.research_areas ?? item.researchAreas ?? ''
       }));
@@ -274,7 +277,18 @@ export default function Research(props) {
                       paginatedResearch.map((research) => (
                         <TableRow key={research.id} hover>
                           <TableCell>{research.id}</TableCell>
-                          <TableCell>{research.name}</TableCell>
+                          <TableCell>
+                            <Link
+                              href={`/profile/${research.slug}`}
+                              target="_blank"
+                              rel="noopener noreferrer"
+                              underline="hover"
+                              sx={{ color: '#1976d2', fontWeight: 600 }}
+                            >
+                              {research.name}
+                            </Link>
+
+                          </TableCell>
                           <TableCell>{research.research_title}</TableCell>
                           <TableCell>
                             <Link
@@ -388,7 +402,20 @@ export default function Research(props) {
                       paginatedAreas.map((area) => (
                         <TableRow key={area.id} hover>
                           <TableCell>{area.id}</TableCell>
-                          <TableCell>{area.name}</TableCell>
+                          <TableCell>
+                            
+
+                            <Link
+                              href={`/profile/${area.slug}`}
+                              target="_blank"
+                              rel="noopener noreferrer"
+                              underline="hover"
+                              sx={{ color: '#1976d2', fontWeight: 600 }}
+                            >
+                              {area.name}
+                            </Link>
+
+                          </TableCell>
                           <TableCell>{area.research_areas}</TableCell>
                         </TableRow>
                       ))

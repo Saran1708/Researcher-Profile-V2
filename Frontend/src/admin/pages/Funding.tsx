@@ -30,7 +30,8 @@ import {
   datePickersCustomizations,
   treeViewCustomizations,
 } from '../theme/customizations';
-
+import { Link as RouterLink } from 'react-router-dom';
+import Link from '@mui/material/Link';
 const xThemeComponents = {
   ...chartsCustomizations,
   ...datePickersCustomizations,
@@ -261,7 +262,20 @@ export default function Funding(props: any) {
                       paginatedFundings.map((funding) => (
                         <TableRow key={funding.id} hover>
                           <TableCell>{funding.id}</TableCell>
-                          <TableCell>{funding.staffName}</TableCell>
+                          <TableCell>
+                            
+                            <Link
+                              href={`/profile/${funding.slug}`}
+                              target="_blank"
+                              rel="noopener noreferrer"
+                              underline="hover"
+                              sx={{ color: '#1976d2', fontWeight: 600 }}
+                            >
+                              {funding.staffName}
+                            </Link>
+
+                          </TableCell>
+
                           <TableCell>{funding.projectTitle}</TableCell>
                           <TableCell>{funding.fundingAgency}</TableCell>
                           <TableCell>{funding.fundingMonthAndYear}</TableCell>

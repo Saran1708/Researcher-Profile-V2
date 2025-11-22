@@ -25,6 +25,10 @@ import SideMenu from '../components/SideMenu';
 import AppTheme from '../theme/AppTheme';
 import Loader from '../../components/MainComponents/Loader';
 import axiosClient from '../../utils/axiosClient';
+import { Link as RouterLink } from 'react-router-dom';
+import Link from '@mui/material/Link';
+
+
 import {
     chartsCustomizations,
     datePickersCustomizations,
@@ -240,7 +244,20 @@ export default function PhdDetails(props) {
                                             paginatedStaff.map((staff) => (
                                                 <TableRow key={staff.id} hover>
                                                     <TableCell>{staff.id}</TableCell>
-                                                    <TableCell>{staff.staffName}</TableCell>
+                                                    <TableCell>
+
+                                                        <Link
+                                                            href={`/profile/${staff.slug}`}
+                                                            target="_blank"
+                                                            rel="noopener noreferrer"
+                                                            underline="hover"
+                                                            sx={{ color: '#1976d2', fontWeight: 600 }}
+                                                        >
+                                                            {staff.staffName}
+                                                        </Link>
+
+                                                    </TableCell>
+
                                                     <TableCell>{staff.department}</TableCell>
                                                     <TableCell>{staff.phdScholarsRegistered}</TableCell>
                                                     <TableCell>{staff.phdScholarsProduced}</TableCell>
@@ -350,7 +367,20 @@ export default function PhdDetails(props) {
                                             paginatedScholars.map((scholar) => (
                                                 <TableRow key={scholar.id} hover>
                                                     <TableCell>{scholar.id}</TableCell>
-                                                    <TableCell>{scholar.staffName}</TableCell>
+                                                    <TableCell>
+                                                        
+                                                        <Link
+                                                            href={`/profile/${scholar.slug}`}
+                                                            target="_blank"
+                                                            rel="noopener noreferrer"
+                                                            underline="hover"
+                                                            sx={{ color: '#1976d2', fontWeight: 600 }}
+                                                        >
+                                                            {scholar.staffName}
+                                                        </Link>
+
+                                                    </TableCell>
+
                                                     <TableCell>{scholar.department}</TableCell>
                                                     <TableCell>{scholar.scholarName}</TableCell>
                                                     <TableCell>{scholar.topic}</TableCell>

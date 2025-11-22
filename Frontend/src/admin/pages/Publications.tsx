@@ -27,6 +27,7 @@ import Button from '@mui/material/Button';
 import DownloadIcon from '@mui/icons-material/Download';
 import Loader from '../../components/MainComponents/Loader';
 import axiosClient from '../../utils/axiosClient';
+import { Link as RouterLink } from 'react-router-dom';
 import {
   chartsCustomizations,
   datePickersCustomizations,
@@ -253,7 +254,19 @@ export default function Publications(props: any) {
                     {paginatedPublications.map((publication) => (
                       <TableRow key={publication.id} hover>
                         <TableCell>{publication.id}</TableCell>
-                        <TableCell>{publication.name}</TableCell>
+                        <TableCell>
+                          
+                          <Link
+                            href={`/profile/${publication.slug}`}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            underline="hover"
+                            sx={{ color: '#1976d2', fontWeight: 600 }}
+                          >
+                            {publication.name}
+                          </Link>
+
+                        </TableCell>
                         <TableCell>{publication.publicationTitle}</TableCell>
                         <TableCell>
                           <Link
