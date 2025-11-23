@@ -12,6 +12,13 @@ from UserDetails.models import (
     Collaboration, Consultancy, Career_Highlight, Research_Career
 )
 from datetime import datetime
+from django.http import JsonResponse
+from django.utils import timezone
+from datetime import timedelta
+
+from django.db.models import Count
+from UserDetails.models import ProfileViewLog  
+
 
 User = get_user_model()
 
@@ -20,7 +27,7 @@ User = get_user_model()
 class ManageUsersView(APIView):
     permission_classes = [IsAuthenticated]
 
-    def get(self, request):
+    def get(self, request): 
         """Get all users"""
         users = User.objects.all().order_by('id')
 
@@ -526,3 +533,74 @@ def phd_supervision_status(request):
     ]
     
     return Response(status_data)
+
+
+
+
+@api_view(['GET'])
+@permission_classes([IsAuthenticated])
+def admin_profile_views_analytics(request):
+    """
+    Get top 5 staff members with highest profile views for different time periods
+    """
+    now = timezone.now()
+    
+    # Time periods
+    one_day_ago = now - timedelta(days=1)
+    one_week_ago = now - timedelta(days=7)
+    one_month_ago = now - timedelta(days=30)
+    
+    # Helper function to get top 5 users by view count
+    def get_top_users(time_filter=None):
+        queryset = ProfileViewLog.objects.all()
+        
+        if time_filter:
+            queryset = queryset.filter(timestamp__gte=time_filter)
+        
+        # Group by user and count views
+        top_users = queryset.values('user').annotate(
+            view_count=Count('id')
+        ).order_by('-view_count')[:5]
+        
+        # Get user details
+        result = []
+        for idx, item in enumerate(top_users, start=1):
+            try:
+                user = User.objects.select_related('profile_tracker').get(id=item['user'])
+                
+                # Get staff details
+                try:
+                    staff_details = Staff_Details.objects.get(email=user)
+                    staff_name = f"{staff_details.prefix} {staff_details.name}".strip()
+                    department = staff_details.department
+                except Staff_Details.DoesNotExist:
+                    staff_name = user.email
+                    department = 'N/A'
+                
+                result.append({
+                    'rank': idx,
+                    'staffName': staff_name,
+                    'department': department,
+                    'views': item['view_count'],
+                    'slug': user.slug if user.slug else ''
+                })
+            except User.DoesNotExist:
+                continue
+            except Exception as e:
+                print(f"Error processing user {item['user']}: {e}")
+                continue
+        
+        return result
+    
+    # Get data for different time periods
+    daily_top_views = get_top_users(one_day_ago)
+    weekly_top_views = get_top_users(one_week_ago)
+    monthly_top_views = get_top_users(one_month_ago)
+    overall_top_views = get_top_users()
+    
+    return JsonResponse({
+        'daily': daily_top_views,
+        'weekly': weekly_top_views,
+        'monthly': monthly_top_views,
+        'overall': overall_top_views
+    })

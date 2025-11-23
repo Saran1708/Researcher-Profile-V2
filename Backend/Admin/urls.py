@@ -33,4 +33,6 @@ urlpatterns = [
     path('dashboard/research-distribution/', views.research_distribution, name='research_distribution'),
     path('dashboard/funding-trend/', views.funding_yearly_trend, name='funding_trend'),
     path('dashboard/phd-status/', views.phd_supervision_status, name='phd_status'),
+
+    path('profile-views-analytics/', views.admin_profile_views_analytics, name='admin_profile_views_analytics'),
 ]

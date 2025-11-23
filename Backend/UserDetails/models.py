@@ -201,8 +201,10 @@ class ProfileTracker(models.Model):
     educational_details_completed = models.BooleanField(default=False)
     research_career_completed = models.BooleanField(default=False)
     career_highlights_completed = models.BooleanField(default=False)
+   
 
     last_updated = models.DateTimeField(auto_now=True)
+    
 
     def __str__(self):
         return f"{self.user.email} - Profile Tracker"
@@ -218,3 +220,13 @@ class ProfileTracker(models.Model):
             self.research_career_completed,
             self.career_highlights_completed,
         ])
+
+
+
+class ProfileViewLog(models.Model):
+    user = models.ForeignKey(User, on_delete=models.CASCADE)   # Profile owner
+    ip_address = models.CharField(max_length=100)
+    timestamp = models.DateTimeField(auto_now_add=True)
+
+    def __str__(self):
+        return f"{self.user.username} viewed from {self.ip_address}"

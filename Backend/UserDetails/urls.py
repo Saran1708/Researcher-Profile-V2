@@ -47,6 +47,9 @@ urlpatterns = [
     path('research-career/', views.research_career_view, name='research-career-list-create'),
     path('research-career/<int:pk>/', views.research_career_detail, name='research-career-detail'),
 
+    path("profile/analytics/", views.profile_view_analytics, name="profile-analytics"),
+
+
     path('profile/status/', views.profile_completion_status, name='profile_status'),
 
 

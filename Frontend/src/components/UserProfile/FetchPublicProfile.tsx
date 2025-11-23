@@ -121,10 +121,10 @@ export default function   FetchPublicProfile() {
   const [researchCareer, setResearchCareer] = useState([]);
 
   useEffect(() => {
-    FetchPublicProfile();
+    fetchProfileData();
   }, [slug]);
 
-  const FetchPublicProfile = async () => {
+  const fetchProfileData = async () => {
     try {
       setLoading(true);
       setError(null);

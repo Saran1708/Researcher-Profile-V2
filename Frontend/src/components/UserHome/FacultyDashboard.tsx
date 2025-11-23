@@ -107,13 +107,13 @@ export default function Dashboard() {
   });
 
   // Mock data for profile views (as you mentioned)
-  const profileViews = {
-    total: 2458,
-    weekly: 187,
-    monthly: 654,
-    weeklyGrowth: 12.5,
-    monthlyGrowth: 8.3,
-  };
+  const [profileViews, setProfileViews] = useState({
+    total: 0,
+    weekly: 0,
+    monthly: 0,
+    weeklyGrowth: 0,
+    monthlyGrowth: 0,
+  });
 
   useEffect(() => {
     fetchAllData();
@@ -142,7 +142,8 @@ export default function Dashboard() {
         collaborationRes,
         consultancyRes,
         careerHighlightRes,
-        researchCareerRes
+        researchCareerRes,
+        analyticsRes
       ] = await Promise.all([
         axiosClient.get(`${API_BASE_URL}/profile/status/`, { headers }),
         axiosClient.get(`${API_BASE_URL}/staff-details/`, { headers }).catch(() => ({ data: null })),
@@ -159,7 +160,8 @@ export default function Dashboard() {
         axiosClient.get(`${API_BASE_URL}/collaboration/`, { headers }).catch(() => ({ data: [] })),
         axiosClient.get(`${API_BASE_URL}/consultancy/`, { headers }).catch(() => ({ data: [] })),
         axiosClient.get(`${API_BASE_URL}/career-highlight/`, { headers }).catch(() => ({ data: [] })),
-        axiosClient.get(`${API_BASE_URL}/research-career/`, { headers }).catch(() => ({ data: [] }))
+        axiosClient.get(`${API_BASE_URL}/research-career/`, { headers }).catch(() => ({ data: [] })),
+        axiosClient.get(`${API_BASE_URL}/profile/analytics/`, { headers }).catch(() => ({ data: null })),
       ]);
 
       setProfileStatus(statusRes.data);
@@ -169,6 +171,11 @@ export default function Dashboard() {
         setLoading(false);
         return;
       }
+
+      if (analyticsRes?.data) {
+        setProfileViews(analyticsRes.data);
+      }
+
 
       // Set user data
       if (staffRes.data) {
@@ -208,45 +215,45 @@ export default function Dashboard() {
       setLoading(false);
     } catch (error) {
       console.error("Error fetching dashboard data:", error);
-       setServerError(true); 
+      setServerError(true);
       setLoading(false);
     }
   };
 
   if (serverError) {
-  return (
-    <Box
-      sx={{
-        minHeight: "100vh",
-        display: "flex",
-        alignItems: "center",
-        justifyContent: "center",
-        bgcolor: "background.default",
-        p: 2,
-      }}
-    >
-      <IncompleteCard sx={{ maxWidth: 520, textAlign: "center", p: 4 }}>
-        <ErrorOutlineIcon sx={{ fontSize: 50, color: "error.main", mb: 2 }} />
+    return (
+      <Box
+        sx={{
+          minHeight: "100vh",
+          display: "flex",
+          alignItems: "center",
+          justifyContent: "center",
+          bgcolor: "background.default",
+          p: 2,
+        }}
+      >
+        <IncompleteCard sx={{ maxWidth: 520, textAlign: "center", p: 4 }}>
+          <ErrorOutlineIcon sx={{ fontSize: 50, color: "error.main", mb: 2 }} />
 
-        <Typography variant="h5" fontWeight={700} mb={1}>
-          Error Fetching Details
-        </Typography>
+          <Typography variant="h5" fontWeight={700} mb={1}>
+            Error Fetching Details
+          </Typography>
 
-        <Typography variant="body1" color="text.secondary" mb={3}>
-          Unable to connect to the server. Please try again later.
-        </Typography>
+          <Typography variant="body1" color="text.secondary" mb={3}>
+            Unable to connect to the server. Please try again later.
+          </Typography>
 
-        <Button
-          variant="contained"
-          onClick={() => window.location.reload()}
-          sx={{ mt: 1 }}
-        >
-          Retry
-        </Button>
-      </IncompleteCard>
-    </Box>
-  );
-}
+          <Button
+            variant="contained"
+            onClick={() => window.location.reload()}
+            sx={{ mt: 1 }}
+          >
+            Retry
+          </Button>
+        </IncompleteCard>
+      </Box>
+    );
+  }
 
 
   if (loading) {
@@ -259,7 +266,7 @@ export default function Dashboard() {
           justifyContent: "center",
         }}
       >
-       <ResearchLoader />
+        <ResearchLoader />
       </Box>
     );
   }

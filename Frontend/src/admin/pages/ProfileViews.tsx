@@ -12,10 +12,13 @@ import TableRow from '@mui/material/TableRow';
 import TableSortLabel from '@mui/material/TableSortLabel';
 import Paper from '@mui/material/Paper';
 import Typography from '@mui/material/Typography';
+import Link from '@mui/material/Link';
 import AppNavbar from '../components/AppNavbar';
 import Header from '../components/Header';
 import SideMenu from '../components/SideMenu';
 import AppTheme from '../theme/AppTheme';
+import Loader from '../../components/MainComponents/Loader';
+import axiosClient from '../../utils/axiosClient';
 import {
   chartsCustomizations,
   datePickersCustomizations,
@@ -28,40 +31,15 @@ const xThemeComponents = {
   ...treeViewCustomizations,
 };
 
-// Sample data for different time periods
-const dailyTopViews = [
-  { rank: 1, staffName: 'Dr. John Doe', department: 'Computer Science', views: 1245 },
-  { rank: 2, staffName: 'Dr. Jane Smith', department: 'Physics', views: 987 },
-  { rank: 3, staffName: 'Dr. Robert Wilson', department: 'Mathematics', views: 856 },
-  { rank: 4, staffName: 'Dr. Sarah Johnson', department: 'Chemistry', views: 743 },
-  { rank: 5, staffName: 'Dr. Michael Brown', department: 'Biology', views: 698 },
-];
-
-const weeklyTopViews = [
-  { rank: 1, staffName: 'Dr. Jane Smith', department: 'Physics', views: 8234 },
-  { rank: 2, staffName: 'Dr. John Doe', department: 'Computer Science', views: 6543 },
-  { rank: 3, staffName: 'Dr. Sarah Johnson', department: 'Chemistry', views: 5876 },
-  { rank: 4, staffName: 'Dr. Michael Brown', department: 'Biology', views: 4932 },
-  { rank: 5, staffName: 'Dr. Robert Wilson', department: 'Mathematics', views: 4521 },
-];
-
-const monthlyTopViews = [
-  { rank: 1, staffName: 'Dr. Sarah Johnson', department: 'Chemistry', views: 34567 },
-  { rank: 2, staffName: 'Dr. Jane Smith', department: 'Physics', views: 28934 },
-  { rank: 3, staffName: 'Dr. John Doe', department: 'Computer Science', views: 23456 },
-  { rank: 4, staffName: 'Dr. Michael Brown', department: 'Biology', views: 21098 },
-  { rank: 5, staffName: 'Dr. Robert Wilson', department: 'Mathematics', views: 18765 },
-];
-
-const overallTopViews = [
-  { rank: 1, staffName: 'Dr. Jane Smith', department: 'Physics', views: 456789 },
-  { rank: 2, staffName: 'Dr. John Doe', department: 'Computer Science', views: 345678 },
-  { rank: 3, staffName: 'Dr. Sarah Johnson', department: 'Chemistry', views: 298765 },
-  { rank: 4, staffName: 'Dr. Michael Brown', department: 'Biology', views: 267890 },
-  { rank: 5, staffName: 'Dr. Robert Wilson', department: 'Mathematics', views: 234567 },
-];
+const API_URL = import.meta.env.VITE_API_URL + '/admin/';
 
 export default function ProfileViews(props) {
+  const [loading, setLoading] = React.useState(false);
+  const [dailyTopViews, setDailyTopViews] = React.useState([]);
+  const [weeklyTopViews, setWeeklyTopViews] = React.useState([]);
+  const [monthlyTopViews, setMonthlyTopViews] = React.useState([]);
+  const [overallTopViews, setOverallTopViews] = React.useState([]);
+
   const [dailyOrder, setDailyOrder] = React.useState('asc');
   const [dailyOrderBy, setDailyOrderBy] = React.useState('rank');
   
@@ -73,6 +51,36 @@ export default function ProfileViews(props) {
   
   const [overallOrder, setOverallOrder] = React.useState('asc');
   const [overallOrderBy, setOverallOrderBy] = React.useState('rank');
+
+  // Fetch data on component mount
+  React.useEffect(() => {
+    fetchProfileViewsData();
+  }, []);
+
+  const fetchProfileViewsData = async () => {
+    setLoading(true);
+    try {
+      const token = localStorage.getItem('access_token');
+      if (!token) {
+        console.error('No access token found');
+        return;
+      }
+
+      const response = await axiosClient.get(`${API_URL}profile-views-analytics/`, {
+        headers: { Authorization: `Bearer ${token}` }
+      });
+
+      setDailyTopViews(response.data.daily || []);
+      setWeeklyTopViews(response.data.weekly || []);
+      setMonthlyTopViews(response.data.monthly || []);
+      setOverallTopViews(response.data.overall || []);
+
+    } catch (err) {
+      console.error('Error fetching profile views data:', err);
+    } finally {
+      setLoading(false);
+    }
+  };
 
   const handleSort = (property, orderBy, order, setOrder, setOrderBy) => {
     const isAsc = orderBy === property && order === 'asc';
@@ -96,9 +104,99 @@ export default function ProfileViews(props) {
   const sortedMonthly = sortData(monthlyTopViews, monthlyOrderBy, monthlyOrder);
   const sortedOverall = sortData(overallTopViews, overallOrderBy, overallOrder);
 
+  const renderTable = (data, title, orderBy, order, setOrder, setOrderBy, handleSortFunc) => (
+    <>
+      <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+        <Typography variant="h6" sx={{ fontWeight: 600 }}>
+          {title}
+        </Typography>
+      </Box>
+
+      <Paper elevation={0} sx={{ borderRadius: 3, border: (theme) => `1px solid ${theme.palette.divider}`, overflow: 'hidden' }}>
+        <TableContainer>
+          <Table>
+            <TableHead>
+              <TableRow>
+                <TableCell>
+                  <TableSortLabel 
+                    active={orderBy === 'rank'} 
+                    direction={orderBy === 'rank' ? order : 'asc'} 
+                    onClick={() => handleSortFunc('rank', orderBy, order, setOrder, setOrderBy)}
+                  >
+                    Rank
+                  </TableSortLabel>
+                </TableCell>
+                <TableCell>
+                  <TableSortLabel 
+                    active={orderBy === 'staffName'} 
+                    direction={orderBy === 'staffName' ? order : 'asc'} 
+                    onClick={() => handleSortFunc('staffName', orderBy, order, setOrder, setOrderBy)}
+                  >
+                    Staff Name
+                  </TableSortLabel>
+                </TableCell>
+                <TableCell>
+                  <TableSortLabel 
+                    active={orderBy === 'department'} 
+                    direction={orderBy === 'department' ? order : 'asc'} 
+                    onClick={() => handleSortFunc('department', orderBy, order, setOrder, setOrderBy)}
+                  >
+                    Department
+                  </TableSortLabel>
+                </TableCell>
+                <TableCell>
+                  <TableSortLabel 
+                    active={orderBy === 'views'} 
+                    direction={orderBy === 'views' ? order : 'asc'} 
+                    onClick={() => handleSortFunc('views', orderBy, order, setOrder, setOrderBy)}
+                  >
+                    Views Count
+                  </TableSortLabel>
+                </TableCell>
+              </TableRow>
+            </TableHead>
+            <TableBody>
+              {data.length === 0 ? (
+                <TableRow>
+                  <TableCell colSpan={4} align="center" sx={{ py: 4 }}>
+                    <Typography color="text.secondary">No entries found</Typography>
+                  </TableCell>
+                </TableRow>
+              ) : (
+                data.map((row) => (
+                  <TableRow key={row.rank} hover>
+                    <TableCell>{row.rank}</TableCell>
+                    <TableCell>
+                      {row.slug ? (
+                        <Link
+                          href={`/profile/${row.slug}`}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          underline="hover"
+                          sx={{ color: '#1976d2', fontWeight: 600 }}
+                        >
+                          {row.staffName}
+                        </Link>
+                      ) : (
+                        row.staffName
+                      )}
+                    </TableCell>
+                    <TableCell>{row.department}</TableCell>
+                    <TableCell>{row.views.toLocaleString()}</TableCell>
+                  </TableRow>
+                ))
+              )}
+            </TableBody>
+          </Table>
+        </TableContainer>
+      </Paper>
+    </>
+  );
+
   return (
     <AppTheme {...props} themeComponents={xThemeComponents}>
       <CssBaseline enableColorScheme />
+      {loading && <Loader />}
 
       <Box sx={{ display: 'flex' }}>
         <SideMenu />
@@ -127,260 +225,48 @@ export default function ProfileViews(props) {
             <Header />
 
             {/* Top 5 Daily Views */}
-            <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-              <Typography variant="h6" sx={{ fontWeight: 600 }}>
-                Top 5 Daily Views
-              </Typography>
-            </Box>
-
-            <Paper elevation={0} sx={{ borderRadius: 3, border: (theme) => `1px solid ${theme.palette.divider}`, overflow: 'hidden' }}>
-              <TableContainer>
-                <Table>
-                  <TableHead>
-                    <TableRow>
-                      <TableCell>
-                        <TableSortLabel 
-                          active={dailyOrderBy === 'rank'} 
-                          direction={dailyOrderBy === 'rank' ? dailyOrder : 'asc'} 
-                          onClick={() => handleSort('rank', dailyOrderBy, dailyOrder, setDailyOrder, setDailyOrderBy)}
-                        >
-                          Rank
-                        </TableSortLabel>
-                      </TableCell>
-                      <TableCell>
-                        <TableSortLabel 
-                          active={dailyOrderBy === 'staffName'} 
-                          direction={dailyOrderBy === 'staffName' ? dailyOrder : 'asc'} 
-                          onClick={() => handleSort('staffName', dailyOrderBy, dailyOrder, setDailyOrder, setDailyOrderBy)}
-                        >
-                          Staff Name
-                        </TableSortLabel>
-                      </TableCell>
-                      <TableCell>
-                        <TableSortLabel 
-                          active={dailyOrderBy === 'department'} 
-                          direction={dailyOrderBy === 'department' ? dailyOrder : 'asc'} 
-                          onClick={() => handleSort('department', dailyOrderBy, dailyOrder, setDailyOrder, setDailyOrderBy)}
-                        >
-                          Department
-                        </TableSortLabel>
-                      </TableCell>
-                      <TableCell>
-                        <TableSortLabel 
-                          active={dailyOrderBy === 'views'} 
-                          direction={dailyOrderBy === 'views' ? dailyOrder : 'asc'} 
-                          onClick={() => handleSort('views', dailyOrderBy, dailyOrder, setDailyOrder, setDailyOrderBy)}
-                        >
-                          Views Count
-                        </TableSortLabel>
-                      </TableCell>
-                    </TableRow>
-                  </TableHead>
-                  <TableBody>
-                    {sortedDaily.map((row) => (
-                      <TableRow key={row.rank} hover>
-                        <TableCell>{row.rank}</TableCell>
-                        <TableCell>{row.staffName}</TableCell>
-                        <TableCell>{row.department}</TableCell>
-                        <TableCell>{row.views.toLocaleString()}</TableCell>
-                      </TableRow>
-                    ))}
-                  </TableBody>
-                </Table>
-              </TableContainer>
-            </Paper>
+            {renderTable(
+              sortedDaily, 
+              'Top 5 Daily Views',
+              dailyOrderBy,
+              dailyOrder,
+              setDailyOrder,
+              setDailyOrderBy,
+              handleSort
+            )}
 
             {/* Top 5 Weekly Views */}
-            <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-              <Typography variant="h6" sx={{ fontWeight: 600 }}>
-                Top 5 Weekly Views
-              </Typography>
-            </Box>
-
-            <Paper elevation={0} sx={{ borderRadius: 3, border: (theme) => `1px solid ${theme.palette.divider}`, overflow: 'hidden' }}>
-              <TableContainer>
-                <Table>
-                  <TableHead>
-                    <TableRow>
-                      <TableCell>
-                        <TableSortLabel 
-                          active={weeklyOrderBy === 'rank'} 
-                          direction={weeklyOrderBy === 'rank' ? weeklyOrder : 'asc'} 
-                          onClick={() => handleSort('rank', weeklyOrderBy, weeklyOrder, setWeeklyOrder, setWeeklyOrderBy)}
-                        >
-                          Rank
-                        </TableSortLabel>
-                      </TableCell>
-                      <TableCell>
-                        <TableSortLabel 
-                          active={weeklyOrderBy === 'staffName'} 
-                          direction={weeklyOrderBy === 'staffName' ? weeklyOrder : 'asc'} 
-                          onClick={() => handleSort('staffName', weeklyOrderBy, weeklyOrder, setWeeklyOrder, setWeeklyOrderBy)}
-                        >
-                          Staff Name
-                        </TableSortLabel>
-                      </TableCell>
-                      <TableCell>
-                        <TableSortLabel 
-                          active={weeklyOrderBy === 'department'} 
-                          direction={weeklyOrderBy === 'department' ? weeklyOrder : 'asc'} 
-                          onClick={() => handleSort('department', weeklyOrderBy, weeklyOrder, setWeeklyOrder, setWeeklyOrderBy)}
-                        >
-                          Department
-                        </TableSortLabel>
-                      </TableCell>
-                      <TableCell>
-                        <TableSortLabel 
-                          active={weeklyOrderBy === 'views'} 
-                          direction={weeklyOrderBy === 'views' ? weeklyOrder : 'asc'} 
-                          onClick={() => handleSort('views', weeklyOrderBy, weeklyOrder, setWeeklyOrder, setWeeklyOrderBy)}
-                        >
-                          Views Count
-                        </TableSortLabel>
-                      </TableCell>
-                    </TableRow>
-                  </TableHead>
-                  <TableBody>
-                    {sortedWeekly.map((row) => (
-                      <TableRow key={row.rank} hover>
-                        <TableCell>{row.rank}</TableCell>
-                        <TableCell>{row.staffName}</TableCell>
-                        <TableCell>{row.department}</TableCell>
-                        <TableCell>{row.views.toLocaleString()}</TableCell>
-                      </TableRow>
-                    ))}
-                  </TableBody>
-                </Table>
-              </TableContainer>
-            </Paper>
+            {renderTable(
+              sortedWeekly,
+              'Top 5 Weekly Views',
+              weeklyOrderBy,
+              weeklyOrder,
+              setWeeklyOrder,
+              setWeeklyOrderBy,
+              handleSort
+            )}
 
             {/* Top 5 Monthly Views */}
-            <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-              <Typography variant="h6" sx={{ fontWeight: 600 }}>
-                Top 5 Monthly Views
-              </Typography>
-            </Box>
-
-            <Paper elevation={0} sx={{ borderRadius: 3, border: (theme) => `1px solid ${theme.palette.divider}`, overflow: 'hidden' }}>
-              <TableContainer>
-                <Table>
-                  <TableHead>
-                    <TableRow>
-                      <TableCell>
-                        <TableSortLabel 
-                          active={monthlyOrderBy === 'rank'} 
-                          direction={monthlyOrderBy === 'rank' ? monthlyOrder : 'asc'} 
-                          onClick={() => handleSort('rank', monthlyOrderBy, monthlyOrder, setMonthlyOrder, setMonthlyOrderBy)}
-                        >
-                          Rank
-                        </TableSortLabel>
-                      </TableCell>
-                      <TableCell>
-                        <TableSortLabel 
-                          active={monthlyOrderBy === 'staffName'} 
-                          direction={monthlyOrderBy === 'staffName' ? monthlyOrder : 'asc'} 
-                          onClick={() => handleSort('staffName', monthlyOrderBy, monthlyOrder, setMonthlyOrder, setMonthlyOrderBy)}
-                        >
-                          Staff Name
-                        </TableSortLabel>
-                      </TableCell>
-                      <TableCell>
-                        <TableSortLabel 
-                          active={monthlyOrderBy === 'department'} 
-                          direction={monthlyOrderBy === 'department' ? monthlyOrder : 'asc'} 
-                          onClick={() => handleSort('department', monthlyOrderBy, monthlyOrder, setMonthlyOrder, setMonthlyOrderBy)}
-                        >
-                          Department
-                        </TableSortLabel>
-                      </TableCell>
-                      <TableCell>
-                        <TableSortLabel 
-                          active={monthlyOrderBy === 'views'} 
-                          direction={monthlyOrderBy === 'views' ? monthlyOrder : 'asc'} 
-                          onClick={() => handleSort('views', monthlyOrderBy, monthlyOrder, setMonthlyOrder, setMonthlyOrderBy)}
-                        >
-                          Views Count
-                        </TableSortLabel>
-                      </TableCell>
-                    </TableRow>
-                  </TableHead>
-                  <TableBody>
-                    {sortedMonthly.map((row) => (
-                      <TableRow key={row.rank} hover>
-                        <TableCell>{row.rank}</TableCell>
-                        <TableCell>{row.staffName}</TableCell>
-                        <TableCell>{row.department}</TableCell>
-                        <TableCell>{row.views.toLocaleString()}</TableCell>
-                      </TableRow>
-                    ))}
-                  </TableBody>
-                </Table>
-              </TableContainer>
-            </Paper>
+            {renderTable(
+              sortedMonthly,
+              'Top 5 Monthly Views',
+              monthlyOrderBy,
+              monthlyOrder,
+              setMonthlyOrder,
+              setMonthlyOrderBy,
+              handleSort
+            )}
 
             {/* Top 5 Overall Views */}
-            <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-              <Typography variant="h6" sx={{ fontWeight: 600 }}>
-                Top 5 Overall Views
-              </Typography>
-            </Box>
-
-            <Paper elevation={0} sx={{ borderRadius: 3, border: (theme) => `1px solid ${theme.palette.divider}`, overflow: 'hidden' }}>
-              <TableContainer>
-                <Table>
-                  <TableHead>
-                    <TableRow>
-                      <TableCell>
-                        <TableSortLabel 
-                          active={overallOrderBy === 'rank'} 
-                          direction={overallOrderBy === 'rank' ? overallOrder : 'asc'} 
-                          onClick={() => handleSort('rank', overallOrderBy, overallOrder, setOverallOrder, setOverallOrderBy)}
-                        >
-                          Rank
-                        </TableSortLabel>
-                      </TableCell>
-                      <TableCell>
-                        <TableSortLabel 
-                          active={overallOrderBy === 'staffName'} 
-                          direction={overallOrderBy === 'staffName' ? overallOrder : 'asc'} 
-                          onClick={() => handleSort('staffName', overallOrderBy, overallOrder, setOverallOrder, setOverallOrderBy)}
-                        >
-                          Staff Name
-                        </TableSortLabel>
-                      </TableCell>
-                      <TableCell>
-                        <TableSortLabel 
-                          active={overallOrderBy === 'department'} 
-                          direction={overallOrderBy === 'department' ? overallOrder : 'asc'} 
-                          onClick={() => handleSort('department', overallOrderBy, overallOrder, setOverallOrder, setOverallOrderBy)}
-                        >
-                          Department
-                        </TableSortLabel>
-                      </TableCell>
-                      <TableCell>
-                        <TableSortLabel 
-                          active={overallOrderBy === 'views'} 
-                          direction={overallOrderBy === 'views' ? overallOrder : 'asc'} 
-                          onClick={() => handleSort('views', overallOrderBy, overallOrder, setOverallOrder, setOverallOrderBy)}
-                        >
-                          Views Count
-                        </TableSortLabel>
-                      </TableCell>
-                    </TableRow>
-                  </TableHead>
-                  <TableBody>
-                    {sortedOverall.map((row) => (
-                      <TableRow key={row.rank} hover>
-                        <TableCell>{row.rank}</TableCell>
-                        <TableCell>{row.staffName}</TableCell>
-                        <TableCell>{row.department}</TableCell>
-                        <TableCell>{row.views.toLocaleString()}</TableCell>
-                      </TableRow>
-                    ))}
-                  </TableBody>
-                </Table>
-              </TableContainer>
-            </Paper>
+            {renderTable(
+              sortedOverall,
+              'Top 5 Overall Views',
+              overallOrderBy,
+              overallOrder,
+              setOverallOrder,
+              setOverallOrderBy,
+              handleSort
+            )}
 
           </Stack>
         </Box>

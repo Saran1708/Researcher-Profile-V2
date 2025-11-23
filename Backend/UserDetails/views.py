@@ -7,6 +7,9 @@ from rest_framework.permissions import IsAuthenticated
 from django.http import JsonResponse
 from django.views.decorators.http import require_http_methods
 from django.views.decorators.csrf import csrf_exempt
+from datetime import timedelta
+from django.utils import timezone
+
 
 from .models import (
     User, 
@@ -25,7 +28,8 @@ from .models import (
     Research_Career,
     Collaboration, 
     Consultancy,
-    ProfileTracker
+    ProfileTracker,
+    ProfileViewLog
 )
 
 from .serializers import (
@@ -46,6 +50,14 @@ from .serializers import (
     CollaborationSerializer,
     ConsultancySerializer,
 )
+
+
+def get_client_ip(request):
+    x_forwarded_for = request.META.get("HTTP_X_FORWARDED_FOR")
+    if x_forwarded_for:
+        return x_forwarded_for.split(",")[0]
+    return request.META.get("REMOTE_ADDR")
+
 
 @api_view(['GET', 'POST', 'PUT'])
 @permission_classes([IsAuthenticated])
@@ -905,9 +917,67 @@ def profile_completion_status(request):
     return Response(data, status=status.HTTP_200_OK)
 
 
+@api_view(['GET'])
+@permission_classes([IsAuthenticated])
+def profile_view_analytics(request):
+    user = request.user
+    now = timezone.now()
+
+    # Total views
+    total_views = ProfileViewLog.objects.filter(user=user).count()
+
+    # Weekly
+    one_week_ago = now - timedelta(days=7)
+    weekly_views = ProfileViewLog.objects.filter(
+        user=user,
+        timestamp__gte=one_week_ago
+    ).count()
+
+    # Previous week
+    prev_week = now - timedelta(days=14)
+    prev_weekly_views = ProfileViewLog.objects.filter(
+        user=user,
+        timestamp__gte=prev_week,
+        timestamp__lt=one_week_ago
+    ).count()
+
+    # Monthly
+    one_month_ago = now - timedelta(days=30)
+    monthly_views = ProfileViewLog.objects.filter(
+        user=user,
+        timestamp__gte=one_month_ago
+    ).count()
+
+    # Previous month
+    prev_month = now - timedelta(days=60)
+    prev_monthly_views = ProfileViewLog.objects.filter(
+        user=user,
+        timestamp__gte=prev_month,
+        timestamp__lt=one_month_ago
+    ).count()
+
+    # Growth calculations
+    weekly_growth = (
+        ((weekly_views - prev_weekly_views) / prev_weekly_views) * 100
+        if prev_weekly_views > 0 else 0
+    )
+
+    monthly_growth = (
+        ((monthly_views - prev_monthly_views) / prev_monthly_views) * 100
+        if prev_monthly_views > 0 else 0
+    )
+
+    return JsonResponse({
+        "total": total_views,
+        "weekly": weekly_views,
+        "monthly": monthly_views,
+        "weeklyGrowth": round(weekly_growth, 1),
+        "monthlyGrowth": round(monthly_growth, 1)
+    })
+
+
 
 @require_http_methods(["GET"])
-@csrf_exempt
 def public_profile_view(request, slug):
    
     try:
@@ -933,6 +1003,8 @@ def public_profile_view(request, slug):
             }, status=404)
         
         # ✅ Profile is complete - fetch all data
+
+
         
         # Staff Details
         staff_details = Staff_Details.objects.filter(email=user).first()
@@ -943,6 +1015,35 @@ def public_profile_view(request, slug):
                 'message': 'Staff details not found'
             }, status=404)
         
+
+        try:
+            if profile_tracker.is_profile_complete:
+
+                ip = get_client_ip(request)
+                time_threshold = timezone.now() - timedelta(minutes=5)
+
+                # Check if same IP has viewed this profile in last 5 minutes
+                recent_view_exists = ProfileViewLog.objects.filter(
+                    user=user,
+                    ip_address=ip,
+                    timestamp__gte=time_threshold
+                ).exists()
+
+                if not recent_view_exists:
+                    # Save new view log
+                    ProfileViewLog.objects.create(
+                        user=user,
+                        ip_address=ip
+                    )
+
+                    # Increment main view counter
+                    profile_tracker.view_count += 1
+                    profile_tracker.save()
+
+        except Exception:
+            pass
+
+
         # Build profile picture URL
         profile_pic_url = ''
         if staff_details.profile_picture:
