@@ -1159,3 +1159,226 @@ def public_profile_view(request, slug):
             'error': 'Server error',
             'message': str(e)
         }, status=500)
+    
+
+
+
+@api_view(['GET'])
+def faculty_search(request):
+    """
+    Global search across all faculty-related models
+    Query params:
+    - q: search query string
+    - department: filter by department
+    """
+    query = request.GET.get('q', '').strip()
+    department_filter = request.GET.get('department', '').strip()
+    
+    if not query and not department_filter:
+        return Response({'results': [], 'count': 0})
+    
+    # Get all staff
+    staff_query = Staff_Details.objects.select_related('email').all()
+    
+    # Apply department filter
+    if department_filter:
+        staff_query = staff_query.filter(department=department_filter)
+    
+    results = []
+    
+    for staff in staff_query:
+        match_found = False
+        matched_fields = []
+        
+        if query:
+            # Search in Staff_Details
+            if (query.lower() in staff.name.lower() or
+                query.lower() in staff.email.email.lower() or
+                query.lower() in staff.department.lower() or
+                query.lower() in staff.phone.lower() or
+                (staff.address and query.lower() in staff.address.lower())):
+                match_found = True
+                matched_fields.append('Profile')
+            
+            # Search in Education
+            education = Education.objects.filter(email=staff.email)
+            for edu in education:
+                if (query.lower() in edu.degree.lower() or
+                    query.lower() in edu.college.lower()):
+                    match_found = True
+                    if 'Education' not in matched_fields:
+                        matched_fields.append('Education')
+                    break
+            
+            # Search in Research Areas
+            research = Research.objects.filter(email=staff.email)
+            for res in research:
+                if query.lower() in res.research_areas.lower():
+                    match_found = True
+                    if 'Research Areas' not in matched_fields:
+                        matched_fields.append('Research Areas')
+                    break
+            
+            # Search in Research IDs/Titles
+            research_ids = Research_ID.objects.filter(email=staff.email)
+            for rid in research_ids:
+                if query.lower() in rid.research_title.lower():
+                    match_found = True
+                    if 'Research Projects' not in matched_fields:
+                        matched_fields.append('Research Projects')
+                    break
+            
+            # Search in Funding
+            funding = Funding.objects.filter(email=staff.email)
+            for fund in funding:
+                if (query.lower() in fund.project_title.lower() or
+                    query.lower() in fund.funding_agency.lower()):
+                    match_found = True
+                    if 'Funding' not in matched_fields:
+                        matched_fields.append('Funding')
+                    break
+            
+            # Search in Publications
+            publications = Publication.objects.filter(email=staff.email)
+            for pub in publications:
+                if (query.lower() in pub.publication_title.lower() or
+                    query.lower() in pub.publication_type.lower()):
+                    match_found = True
+                    if 'Publications' not in matched_fields:
+                        matched_fields.append('Publications')
+                    break
+            
+            # Search in Administration Positions
+            admin_positions = Administration_Position.objects.filter(email=staff.email)
+            for admin in admin_positions:
+                if query.lower() in admin.administration_position.lower():
+                    match_found = True
+                    if 'Administration' not in matched_fields:
+                        matched_fields.append('Administration')
+                    break
+            
+            # Search in Honorary Positions
+            honary_positions = Honary_Position.objects.filter(email=staff.email)
+            for hon in honary_positions:
+                if query.lower() in hon.honary_position.lower():
+                    match_found = True
+                    if 'Honorary Positions' not in matched_fields:
+                        matched_fields.append('Honorary Positions')
+                    break
+            
+            # Search in Conferences
+            conferences = Conferenece.objects.filter(email=staff.email)
+            for conf in conferences:
+                if (query.lower() in conf.paper_title.lower() or
+                    query.lower() in conf.conference_details.lower() or
+                    query.lower() in conf.conference_type.lower()):
+                    match_found = True
+                    if 'Conferences' not in matched_fields:
+                        matched_fields.append('Conferences')
+                    break
+            
+            # Search in PhD
+            phds = Phd.objects.filter(email=staff.email)
+            for phd in phds:
+                if (query.lower() in phd.phd_name.lower() or
+                    query.lower() in phd.phd_topic.lower()):
+                    match_found = True
+                    if 'PhD Supervision' not in matched_fields:
+                        matched_fields.append('PhD Supervision')
+                    break
+            
+            # Search in Resource Person
+            resources = Resource_Person.objects.filter(email=staff.email)
+            for res in resources:
+                if (query.lower() in res.resource_topic.lower() or
+                    query.lower() in res.resource_department.lower()):
+                    match_found = True
+                    if 'Resource Person' not in matched_fields:
+                        matched_fields.append('Resource Person')
+                    break
+            
+            # Search in Collaboration
+            collaborations = Collaboration.objects.filter(email=staff.email)
+            for collab in collaborations:
+                if query.lower() in collab.collaboration_details.lower():
+                    match_found = True
+                    if 'Collaborations' not in matched_fields:
+                        matched_fields.append('Collaborations')
+                    break
+            
+            # Search in Consultancy
+            consultancies = Consultancy.objects.filter(email=staff.email)
+            for cons in consultancies:
+                if query.lower() in cons.consultancy_details.lower():
+                    match_found = True
+                    if 'Consultancy' not in matched_fields:
+                        matched_fields.append('Consultancy')
+                    break
+            
+            # Search in Career Highlights
+            career_highlights = Career_Highlight.objects.filter(email=staff.email)
+            for ch in career_highlights:
+                if query.lower() in ch.career_highlight_details.lower():
+                    match_found = True
+                    if 'Career Highlights' not in matched_fields:
+                        matched_fields.append('Career Highlights')
+                    break
+            
+            # Search in Research Career
+            research_careers = Research_Career.objects.filter(email=staff.email)
+            for rc in research_careers:
+                if query.lower() in rc.research_career_details.lower():
+                    match_found = True
+                    if 'Research Career' not in matched_fields:
+                        matched_fields.append('Research Career')
+                    break
+        else:
+            # If only department filter, include all staff from that department
+            match_found = True
+        
+        if match_found:
+            # Get research areas for this staff - split by comma and clean
+            research_areas = []
+            research_objs = Research.objects.filter(email=staff.email)
+            for res in research_objs:
+                if res.research_areas:
+                    # Split by comma and strip whitespace
+                    areas = [area.strip() for area in res.research_areas.split(',') if area.strip()]
+                    research_areas.extend(areas)
+            
+            # Remove duplicates while preserving order
+            seen = set()
+            unique_research_areas = []
+            for area in research_areas:
+                if area.lower() not in seen:
+                    seen.add(area.lower())
+                    unique_research_areas.append(area)
+            
+            profile_pic_url = None
+            if staff.profile_picture:
+                profile_pic_url = staff.profile_picture.url
+            
+            results.append({
+                'id': staff.id,
+                'slug': staff.email.slug if hasattr(staff.email, 'slug') else None,
+                'name': staff.name,
+                'prefix': staff.prefix,
+                'department': staff.department,
+                'email': staff.email.email,
+                'phone': staff.phone,
+                'website': staff.website,
+                'institution': staff.institution,
+                'profile_picture': profile_pic_url,
+                'research_areas': unique_research_areas,
+                'matched_fields': matched_fields if matched_fields else []
+            })
+    
+    # Sort results by name
+    results.sort(key=lambda x: x['name'])
+    
+    return Response({
+        'results': results,
+        'count': len(results)
+    })
+
+

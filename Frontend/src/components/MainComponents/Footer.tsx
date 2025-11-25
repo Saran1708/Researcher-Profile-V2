@@ -1,27 +1,17 @@
 import * as React from 'react';
 import Box from '@mui/material/Box';
-import Button from '@mui/material/Button';
 import Container from '@mui/material/Container';
 import IconButton from '@mui/material/IconButton';
-import InputLabel from '@mui/material/InputLabel';
 import Link from '@mui/material/Link';
 import Stack from '@mui/material/Stack';
-import TextField from '@mui/material/TextField';
 import Typography from '@mui/material/Typography';
-import GitHubIcon from '@mui/icons-material/GitHub';
 import LinkedInIcon from '@mui/icons-material/LinkedIn';
-import TwitterIcon from '@mui/icons-material/X';
-import SitemarkIcon from './SitemarkIcon';
+import YouTubeIcon from '@mui/icons-material/YouTube';
 
 function Copyright() {
   return (
     <Typography variant="body2" sx={{ color: 'text.secondary', mt: 1 }}>
-      {'Copyright © '}
-      <Link color="text.secondary" href="https://mui.com/">
-        Sitemark
-      </Link>
-      &nbsp;
-      {new Date().getFullYear()}
+      {'© 2021 MCC. All Rights Reserved.'}
     </Typography>
   );
 }
@@ -38,7 +28,8 @@ export default function Footer() {
         textAlign: { sm: 'center', md: 'left' },
       }}
     >
-  
+    
+
       <Box
         sx={{
           display: 'flex',
@@ -50,17 +41,12 @@ export default function Footer() {
         }}
       >
         <div>
-          <Link color="text.secondary" variant="body2" href="#">
-            Privacy Policy
-          </Link>
-          <Typography sx={{ display: 'inline', mx: 0.5, opacity: 0.5 }}>
-            &nbsp;•&nbsp;
-          </Typography>
-          <Link color="text.secondary" variant="body2" href="#">
-            Terms of Service
-          </Link>
+          <Typography variant="body2" sx={{ color: 'text.secondary', mb: 2 }}>
+        Developed by MCC MRF Innovation Park
+      </Typography>
           <Copyright />
         </div>
+
         <Stack
           direction="row"
           spacing={1}
@@ -70,25 +56,17 @@ export default function Footer() {
           <IconButton
             color="inherit"
             size="small"
-            href="https://github.com/mui"
-            aria-label="GitHub"
+            href="https://www.youtube.com/@Madras_Christian_College"
+            aria-label="YouTube"
             sx={{ alignSelf: 'center' }}
           >
-            <GitHubIcon />
+            <YouTubeIcon />
           </IconButton>
+
           <IconButton
             color="inherit"
             size="small"
-            href="https://x.com/MaterialUI"
-            aria-label="X"
-            sx={{ alignSelf: 'center' }}
-          >
-            <TwitterIcon />
-          </IconButton>
-          <IconButton
-            color="inherit"
-            size="small"
-            href="https://www.linkedin.com/company/mui/"
+            href="https://www.linkedin.com/school/madras-christian-college/"
             aria-label="LinkedIn"
             sx={{ alignSelf: 'center' }}
           >

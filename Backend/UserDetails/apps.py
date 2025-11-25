@@ -21,7 +21,7 @@ class UsersConfig(AppConfig):
             )
 
             if created:
-                user.set_password("Mcc@321")
+                user.set_password("Mcc@admin@321")
                 user.save()
                 print("✔ Default MCC Admin created")
             else:

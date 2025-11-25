@@ -20,6 +20,7 @@ import Publications from './admin/pages/Publications';
 import Research from './admin/pages/Research';
 import Export from './admin/pages/Export';
 import PublicProfile from './Pages/PublicProfile';
+import SearchPage from './Pages/SearchPage';
 
 
 
@@ -168,6 +169,8 @@ const App = () => {
         } />
 
         <Route path="/profile/:slug" element={<PublicProfile />} />
+
+        <Route path="/search" element={<SearchPage />} />
 
 
 

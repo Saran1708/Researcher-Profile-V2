@@ -93,11 +93,12 @@ class ManageUsersView(APIView):
 
         # Create users (safe now)
         created_users = []
+        default_password = "Mcc@admin@321" if role == "Admin" else "Mcc@123"
 
         for email in valid_emails:
             user = User.objects.create_user(
                 email=email,
-                password='Mcc@123',
+                password=default_password,
                 role=role,
                 password_changed=False
             )

@@ -52,6 +52,9 @@ export default function AppAppBar() {
     navigate('/');
   }
   
+  const handleSearchClick = () => {
+    navigate('/search');
+  };
 
 
   return (
@@ -75,7 +78,9 @@ export default function AppAppBar() {
               variant="text" color="info" size="small">
                 Home
               </Button>
-              <Button variant="text" color="info" size="small">
+              <Button 
+              onClick={handleSearchClick}
+              variant="text" color="info" size="small">
                 Search
               </Button>
               

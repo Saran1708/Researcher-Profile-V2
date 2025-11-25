@@ -54,6 +54,13 @@ urlpatterns = [
 
 
     path('public/profile/<slug:slug>/', views.public_profile_view, name='public-profile'),
+
+    path('faculty/search/', views.faculty_search, name='faculty-search'),
+    
+    
+    
+
+
 ]
 
 
