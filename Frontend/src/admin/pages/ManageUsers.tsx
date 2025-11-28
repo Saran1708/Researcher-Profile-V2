@@ -28,6 +28,7 @@ import Snackbar from '@mui/material/Snackbar';
 import Alert from '@mui/material/Alert';
 import CheckIcon from '@mui/icons-material/Check';
 import Chip from '@mui/material/Chip';
+import LockResetIcon from '@mui/icons-material/LockReset';
 import AppNavbar from '../components/AppNavbar';
 import Header from '../components/Header';
 import SideMenu from '../components/SideMenu';
@@ -36,8 +37,7 @@ import TextareaAutosize from '@mui/material/TextareaAutosize';
 import FormControl from '@mui/material/FormControl';
 import FormLabel from '@mui/material/FormLabel';
 import Select from '@mui/material/Select';
-
-
+import Tooltip from '@mui/material/Tooltip';
 
 import {
   chartsCustomizations,
@@ -55,10 +55,12 @@ const xThemeComponents = {
 
 const API_URL = import.meta.env.VITE_API_URL + '/admin/users/';
 
-export default function ManageUsers(props: any) {
+export default function ManageUsers(props) {
   const [openAddUser, setOpenAddUser] = React.useState(false);
   const [openDeleteConfirm, setOpenDeleteConfirm] = React.useState(false);
+  const [openResetConfirm, setOpenResetConfirm] = React.useState(false);
   const [deleteUserId, setDeleteUserId] = React.useState(null);
+  const [resetUserId, setResetUserId] = React.useState(null);
   const [emailsText, setEmailsText] = React.useState('');
   const [selectedRole, setSelectedRole] = React.useState('Staff');
   const [users, setUsers] = React.useState([]);
@@ -74,7 +76,6 @@ export default function ManageUsers(props: any) {
   const [successSnackbarOpen, setSuccessSnackbarOpen] = React.useState(false);
   const [successMsg, setSuccessMsg] = React.useState('');
 
-  // Fetch users on component mount
   React.useEffect(() => {
     fetchUsers();
   }, []);
@@ -132,14 +133,12 @@ export default function ManageUsers(props: any) {
         }
       );
 
-      // Refresh users list
       await fetchUsers();
 
       setSuccessMsg(res.data.message);
       setSuccessSnackbarOpen(true);
       handleCloseAddUser();
 
-      // Show warning if some emails already existed
       if (res.data.warning) {
         setTimeout(() => {
           setSnackbarMsg(res.data.warning);
@@ -173,7 +172,6 @@ export default function ManageUsers(props: any) {
         headers: { Authorization: `Bearer ${token}` }
       });
 
-      // Refresh users list
       await fetchUsers();
 
       setSuccessMsg('User deleted successfully');
@@ -185,6 +183,45 @@ export default function ManageUsers(props: any) {
       console.error('Error deleting user:', err);
       setSnackbarMsg('Error deleting user');
       setSnackbarOpen(true);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleResetPasswordClick = (id) => {
+    setResetUserId(id);
+    setOpenResetConfirm(true);
+  };
+
+  const handleConfirmReset = async () => {
+    setLoading(true);
+
+    try {
+      const token = localStorage.getItem('access_token');
+      if (!token) return;
+
+      await axiosClient.post(
+        `${API_URL}${resetUserId}/reset-password/`,
+        {},
+        {
+          headers: { Authorization: `Bearer ${token}` }
+        }
+      );
+
+      await fetchUsers();
+
+      setSuccessMsg('Password reset successfully to default (Mcc@123)');
+      setSuccessSnackbarOpen(true);
+      setOpenResetConfirm(false);
+      setResetUserId(null);
+
+    } catch (err) {
+      console.error('Error resetting password:', err);
+      const errorMsg = err.response?.data?.error || 'Error resetting password';
+      setSnackbarMsg(errorMsg);
+      setSnackbarOpen(true);
+      setOpenResetConfirm(false);
+      setResetUserId(null);
     } finally {
       setLoading(false);
     }
@@ -252,10 +289,6 @@ export default function ManageUsers(props: any) {
             }}
           >
             <Header />
-
-            {/* --------------------- */}
-            {/*     YOUR CONTENT      */}
-            {/* --------------------- */}
 
             <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 2 }}>
               <h2 style={{ margin: 0 }}>Manage Users</h2>
@@ -379,16 +412,30 @@ export default function ManageUsers(props: any) {
                         </TableCell>
                         <TableCell>{user.lastLogin}</TableCell>
                         <TableCell align="center">
-                          {user.email !== "admin@mcc.edu.in" && (
-                            <IconButton
-                              color="error"
-                              onClick={() => handleDeleteClick(user.id)}
-                              size="small"
-                            >
-                              <DeleteIcon />
-                            </IconButton>
-                          )}
-
+                          <Box sx={{ display: 'flex', gap: 1, justifyContent: 'center' }}>
+                            {user.passwordChanged && user.role !== 'Admin' && (
+                              <Tooltip title="Reset Password">
+                                <IconButton
+                                  color="warning"
+                                  onClick={() => handleResetPasswordClick(user.id)}
+                                  size="small"
+                                >
+                                  <LockResetIcon />
+                                </IconButton>
+                              </Tooltip>
+                            )}
+                            {user.email !== "admin@mcc.edu.in" && (
+                              <Tooltip title="Delete User">
+                                <IconButton
+                                  color="error"
+                                  onClick={() => handleDeleteClick(user.id)}
+                                  size="small"
+                                >
+                                  <DeleteIcon />
+                                </IconButton>
+                              </Tooltip>
+                            )}
+                          </Box>
                         </TableCell>
                       </TableRow>
                     ))}
@@ -427,10 +474,7 @@ export default function ManageUsers(props: any) {
                     minRows={6}
                     value={emailsText}
                     onChange={(e) => setEmailsText(e.target.value)}
-                    placeholder={
-                      "Enter one email per line\nexample:\njohn@mcc.edu.in\nsarah@mcc.edu.in"
-                    }
-
+                    placeholder="Enter one email per line\nexample:\njohn@mcc.edu.in\nsarah@mcc.edu.in"
                     style={{
                       width: '100%',
                       padding: '14px',
@@ -443,7 +487,6 @@ export default function ManageUsers(props: any) {
 
                   <FormControl fullWidth margin="normal">
                     <FormLabel>Role</FormLabel>
-
                     <Select
                       value={selectedRole}
                       onChange={(e) => setSelectedRole(e.target.value)}
@@ -456,7 +499,6 @@ export default function ManageUsers(props: any) {
                       <MenuItem value="Admin">Admin</MenuItem>
                     </Select>
                   </FormControl>
-
                 </Stack>
               </DialogContent>
               <DialogActions sx={{ px: 3, pb: 2 }}>
@@ -510,6 +552,38 @@ export default function ManageUsers(props: any) {
               </DialogActions>
             </Dialog>
 
+            {/* Reset Password Confirmation Dialog */}
+            <Dialog
+              open={openResetConfirm}
+              onClose={() => setOpenResetConfirm(false)}
+              PaperProps={{
+                sx: { borderRadius: 3 }
+              }}
+            >
+              <DialogTitle>Confirm Password Reset</DialogTitle>
+              <DialogContent>
+                Are you sure you want to reset this user's password? The password will be reset to the default password (Mcc@123) and the user will need to change it on their next login.
+              </DialogContent>
+              <DialogActions sx={{ px: 3, pb: 2 }}>
+                <Button
+                  onClick={() => setOpenResetConfirm(false)}
+                  sx={{ textTransform: 'none', borderRadius: 2 }}
+                  disabled={loading}
+                >
+                  Cancel
+                </Button>
+                <Button
+                  onClick={handleConfirmReset}
+                  color="warning"
+                  variant="contained"
+                  sx={{ textTransform: 'none', borderRadius: 2, px: 3 }}
+                  disabled={loading}
+                >
+                  Reset Password
+                </Button>
+              </DialogActions>
+            </Dialog>
+
             {/* Snackbars */}
             <Snackbar
               open={snackbarOpen}
@@ -538,7 +612,6 @@ export default function ManageUsers(props: any) {
                 {successMsg}
               </Alert>
             </Snackbar>
-
           </Stack>
         </Box>
       </Box>

@@ -880,7 +880,7 @@ export default function Profile() {
 
           <Button
             startIcon={<EditIcon />}
-            onClick={() => (window.location.href = "/edit")}
+            onClick={() => (window.location.href = "/staff/edit")}
             color="primary"
             variant="contained"
             fullWidth

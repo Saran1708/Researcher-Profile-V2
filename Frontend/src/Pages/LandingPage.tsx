@@ -6,6 +6,7 @@ import Hero from '../components/MainComponents/Hero';
 import Features from '../components/MainComponents/Features';
 import FAQ from '../components/MainComponents/FAQ';
 import Footer from '../components/MainComponents/Footer';
+import Highlights from '../components/MainComponents/Highlights';
 
 
 export default function LandingPage(props: { disableCustomTheme?: boolean }) {
@@ -19,6 +20,8 @@ export default function LandingPage(props: { disableCustomTheme?: boolean }) {
       <Hero />
       <div>
         <Features />
+        <Highlights />
+        
         <FAQ />
         <Footer />
       </div>

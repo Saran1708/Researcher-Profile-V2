@@ -24,8 +24,8 @@ export default function FAQ() {
     <Container
       id="faq"
       sx={{
-        
-        
+        pt: { xs: 4, sm: 8 },
+        pb: { xs: 4, sm: 8 },
         position: 'relative',
         display: 'flex',
         flexDirection: 'column',
@@ -55,7 +55,7 @@ export default function FAQ() {
             id="panel1d-header"
           >
             <Typography component="span" variant="subtitle2">
-              How do I contact customer support if I have a question or issue?
+              Who can access faculty profiles on this platform?
             </Typography>
           </AccordionSummary>
           <AccordionDetails>
@@ -64,10 +64,7 @@ export default function FAQ() {
               gutterBottom
               sx={{ maxWidth: { sm: '100%', md: '70%' } }}
             >
-              You can reach our customer support team by emailing&nbsp;
-              <Link href="mailto:support@email.com">support@email.com</Link>
-              &nbsp;or calling our toll-free number. We&apos;re here to assist you
-              promptly.
+              Faculty profiles are publicly accessible to anyone interested in learning about the research expertise at Madras Christian College. External researchers, students, and collaborators can view comprehensive profiles including research areas, publications, and ongoing projects without requiring an account.
             </Typography>
           </AccordionDetails>
         </Accordion>
@@ -81,7 +78,7 @@ export default function FAQ() {
             id="panel2d-header"
           >
             <Typography component="span" variant="subtitle2">
-              Can I return the product if it doesn&apos;t meet my expectations?
+              How can I search for faculty members by their research interests?
             </Typography>
           </AccordionSummary>
           <AccordionDetails>
@@ -90,9 +87,7 @@ export default function FAQ() {
               gutterBottom
               sx={{ maxWidth: { sm: '100%', md: '70%' } }}
             >
-              Absolutely! We offer a hassle-free return policy. If you&apos;re not
-              completely satisfied, you can return the product within [number of
-              days] days for a full refund or exchange.
+              Use the search functionality to enter keywords related to research areas, publication titles, conference topics, or specific expertise. You can also filter results by department to narrow down your search. The platform searches across all profile sections including research areas, publications, and projects to help you find relevant faculty members.
             </Typography>
           </AccordionDetails>
         </Accordion>
@@ -106,7 +101,7 @@ export default function FAQ() {
             id="panel3d-header"
           >
             <Typography component="span" variant="subtitle2">
-              What makes your product stand out from others in the market?
+              Is this platform only for Madras Christian College faculty?
             </Typography>
           </AccordionSummary>
           <AccordionDetails>
@@ -115,9 +110,7 @@ export default function FAQ() {
               gutterBottom
               sx={{ maxWidth: { sm: '100%', md: '70%' } }}
             >
-              Our product distinguishes itself through its adaptability, durability,
-              and innovative features. We prioritize user satisfaction and
-              continually strive to exceed expectations in every aspect.
+              Yes, this platform exclusively features faculty members from Madras Christian College. However, the profiles are publicly accessible to everyone. External researchers, potential collaborators, and students from other institutions can view faculty profiles to identify expertise and explore collaboration opportunities.
             </Typography>
           </AccordionDetails>
         </Accordion>
@@ -131,7 +124,7 @@ export default function FAQ() {
             id="panel4d-header"
           >
             <Typography component="span" variant="subtitle2">
-              Is there a warranty on the product, and what does it cover?
+              What information is available in each faculty profile?
             </Typography>
           </AccordionSummary>
           <AccordionDetails>
@@ -140,10 +133,31 @@ export default function FAQ() {
               gutterBottom
               sx={{ maxWidth: { sm: '100%', md: '70%' } }}
             >
-              Yes, our product comes with a [length of warranty] warranty. It covers
-              defects in materials and workmanship. If you encounter any issues
-              covered by the warranty, please contact our customer support for
-              assistance.
+              Each profile provides comprehensive information organized into sections: Research & Career (research areas, publications, funding, career highlights), Academic Activities (education, administrative positions, conferences), Supervision & Training (Ph.D. supervision, resource person activities), and Collaboration & Consultancy. Contact details including email and phone are also available for reaching out to faculty members.
+            </Typography>
+          </AccordionDetails>
+        </Accordion>
+        <Accordion
+          expanded={expanded.includes('panel5')}
+          onChange={handleChange('panel5')}
+        >
+          <AccordionSummary
+            expandIcon={<ExpandMoreIcon />}
+            aria-controls="panel5d-content"
+            id="panel5d-header"
+          >
+            <Typography component="span" variant="subtitle2">
+              How do I contact a faculty member for potential collaboration?
+            </Typography>
+          </AccordionSummary>
+          <AccordionDetails>
+            <Typography
+              variant="body2"
+              gutterBottom
+              sx={{ maxWidth: { sm: '100%', md: '70%' } }}
+            >
+              Each faculty profile displays contact information including email address and phone number. You can directly reach out to the faculty member using these details. 
+              
             </Typography>
           </AccordionDetails>
         </Accordion>

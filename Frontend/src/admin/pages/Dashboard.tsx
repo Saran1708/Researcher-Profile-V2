@@ -582,14 +582,14 @@ export default function Dashboard(props: { disableCustomTheme?: boolean }) {
             {/* CHARTS SECTION */}
             <Box
               sx={{
-                mt: 2,
+                mt: 4,
                 display: 'grid',
                 gridTemplateColumns: {
                   xs: '1fr',
                   md: 'repeat(2, 1fr)',
                 },
                 gap: { xs: 2, sm: 2.5, md: 3 },
-                mt: 4,
+
               }}
             >
               {/* Publications Trend */}

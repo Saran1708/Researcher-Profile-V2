@@ -9,7 +9,7 @@ from UserDetails.models import (
     Staff_Details, Education, Research, Research_ID, 
     Funding, Publication, Administration_Position, 
     Honary_Position, Conferenece, Phd, Resource_Person,
-    Collaboration, Consultancy, Career_Highlight, Research_Career
+    Collaboration, Consultancy, Career_Highlight, Research_Career,ProfileTracker
 )
 from datetime import datetime
 from django.http import JsonResponse
@@ -605,3 +605,202 @@ def admin_profile_views_analytics(request):
         'monthly': monthly_top_views,
         'overall': overall_top_views
     })
+
+
+
+class ResetUserPasswordView(APIView):
+    permission_classes = [IsAuthenticated]
+    
+    def post(self, request, user_id):
+        """Reset user password to default"""
+        try:
+            user = User.objects.get(id=user_id)
+            
+            # Don't allow resetting admin password
+            if user.role == 'Admin':
+                return Response(
+                    {'error': 'Cannot reset admin password'},
+                    status=status.HTTP_403_FORBIDDEN
+                )
+            
+            # Only reset if password was changed before
+            if not user.password_changed:
+                return Response(
+                    {'error': 'Password has not been changed yet'},
+                    status=status.HTTP_400_BAD_REQUEST
+                )
+            
+            # Reset to default password
+            default_password = "Mcc@123"
+            user.set_password(default_password)
+            user.password_changed = False
+            user.save()
+            
+            return Response(
+                {'message': 'Password reset successfully'},
+                status=status.HTTP_200_OK
+            )
+            
+        except User.DoesNotExist:
+            return Response(
+                {'error': 'User not found'},
+                status=status.HTTP_404_NOT_FOUND
+            )
+        
+
+
+@api_view(['POST'])
+@permission_classes([IsAuthenticated])
+def export_data(request):
+    """
+    Fetch all user data based on selected fields
+    Expected payload: {"fields": ["Basic Details", "Education", "Funding", ...]}
+    Returns JSON with all users and their related data
+    Only exports users with completed profiles
+    """
+    try:
+        selected_fields = request.data.get('fields', [])
+        
+        if not selected_fields:
+            return Response(
+                {"error": "No fields selected for export"}, 
+                status=status.HTTP_400_BAD_REQUEST
+            )
+
+        # Get only users with completed profiles
+        completed_profile_trackers = ProfileTracker.objects.filter(
+            profile_details_completed=True,
+            educational_details_completed=True,
+            research_career_completed=True,
+            career_highlights_completed=True
+        ).values_list('user_id', flat=True)
+        
+        users = User.objects.filter(id__in=completed_profile_trackers).order_by('email')
+        
+        export_data = []
+        
+        for user in users:
+            user_data = {
+                'email': user.email,
+            }
+            
+            # Fetch data based on selected fields
+            if 'Basic Details' in selected_fields:
+                try:
+                    staff_detail = Staff_Details.objects.filter(email=user).first()
+                    if staff_detail:
+                        user_data['basic_details'] = {
+                            'prefix': staff_detail.prefix,
+                            'name': staff_detail.name,
+                            'department': staff_detail.department,
+                            'institution': staff_detail.institution,
+                            'phone': staff_detail.phone,
+                            'address': staff_detail.address,
+                            'website': staff_detail.website or '',
+                        }
+                    else:
+                        user_data['basic_details'] = None
+                except:
+                    user_data['basic_details'] = None
+            
+            if 'Education' in selected_fields:
+                education_list = Education.objects.filter(email=user).values(
+                    'degree', 'college', 'start_year', 'end_year'
+                )
+                user_data['education'] = list(education_list)
+            
+            if 'Research Career' in selected_fields:
+                research_career_list = Research_Career.objects.filter(email=user).values(
+                    'research_career_details'
+                )
+                user_data['research_career'] = list(research_career_list)
+            
+            if 'Career Highlights' in selected_fields:
+                career_highlights_list = Career_Highlight.objects.filter(email=user).values(
+                    'career_highlight_details'
+                )
+                user_data['career_highlights'] = list(career_highlights_list)
+            
+            if 'Research Areas' in selected_fields:
+                research_areas_list = Research.objects.filter(email=user).values(
+                    'research_areas'
+                )
+                user_data['research_areas'] = list(research_areas_list)
+            
+            if 'Research ID' in selected_fields:
+                research_id_list = Research_ID.objects.filter(email=user).values(
+                    'research_title', 'research_link'
+                )
+                user_data['research_ids'] = list(research_id_list)
+            
+            if 'Funding' in selected_fields:
+                funding_list = Funding.objects.filter(email=user).values(
+                    'project_title', 'funding_agency', 'funding_month_and_year', 
+                    'funding_amount', 'funding_status'
+                )
+                user_data['funding'] = list(funding_list)
+            
+            if 'Publications' in selected_fields:
+                publications_list = Publication.objects.filter(email=user).values(
+                    'publication_title', 'publication_link', 'publication_type', 
+                    'publication_month_and_year'
+                )
+                user_data['publications'] = list(publications_list)
+            
+            if 'Administrative Positions' in selected_fields:
+                admin_positions_list = Administration_Position.objects.filter(email=user).values(
+                    'administration_position', 'administration_year_from', 'administration_year_to'
+                )
+                user_data['administrative_positions'] = list(admin_positions_list)
+            
+            if 'Honorary Positions' in selected_fields:
+                honorary_positions_list = Honary_Position.objects.filter(email=user).values(
+                    'honary_position', 'honary_year'
+                )
+                user_data['honorary_positions'] = list(honorary_positions_list)
+            
+            if 'Conference Details' in selected_fields:
+                conference_list = Conferenece.objects.filter(email=user).values(
+                    'paper_title', 'conference_details', 'conference_type', 
+                    'conference_isbn', 'conference_year'
+                )
+                user_data['conferences'] = list(conference_list)
+            
+            if 'PhD Supervision' in selected_fields:
+                phd_list = Phd.objects.filter(email=user).values(
+                    'phd_name', 'phd_topic', 'phd_status', 'phd_years_of_completion'
+                )
+                user_data['phd_supervision'] = list(phd_list)
+            
+            if 'Resource Person Details' in selected_fields:
+                resource_person_list = Resource_Person.objects.filter(email=user).values(
+                    'resource_topic', 'resource_department', 'resource_date'
+                )
+                user_data['resource_person'] = list(resource_person_list)
+            
+            if 'Areas of Consultancy' in selected_fields:
+                consultancy_list = Consultancy.objects.filter(email=user).values(
+                    'consultancy_details'
+                )
+                user_data['consultancy'] = list(consultancy_list)
+            
+            if 'Areas of Collaboration' in selected_fields:
+                collaboration_list = Collaboration.objects.filter(email=user).values(
+                    'collaboration_details'
+                )
+                user_data['collaboration'] = list(collaboration_list)
+            
+            export_data.append(user_data)
+        
+        return Response({
+            'success': True,
+            'data': export_data,
+            'total_users': len(export_data),
+            'selected_fields': selected_fields
+        }, status=status.HTTP_200_OK)
+
+    except Exception as e:
+        return Response(
+            {"error": str(e)}, 
+            status=status.HTTP_500_INTERNAL_SERVER_ERROR
+        )

@@ -39,6 +39,7 @@ const emptyForm = {
 
 const ConferenceForm = () => {
     const [confs, setConfs] = useState([emptyForm]);
+    const [expanded, setExpanded] = useState(false); // ADD THIS LINE
     const [snackbarOpen, setSnackbarOpen] = useState(false);
     const [snackbarMsg, setSnackbarMsg] = useState('');
     const [successSnackbarOpen, setSuccessSnackbarOpen] = useState(false);
@@ -130,7 +131,7 @@ const ConferenceForm = () => {
                 }
             }
             setSuccessSnackbarOpen(true);
-            setExpanded(false);
+            setExpanded(false); // This now works correctly
         } catch (err) {
             console.error('Error saving conferences:', err);
             setSnackbarMsg('Error saving conferences');
@@ -175,7 +176,7 @@ const ConferenceForm = () => {
         <Box mt="40px">
             {loading && <Loader />}
             <Container maxWidth="md">
-                <Accordion>
+                <Accordion expanded={expanded} onChange={() => setExpanded(!expanded)}>
                     <AccordionSummary expandIcon={<ExpandMoreIcon />}>
                         <Stack direction="row" alignItems="center" spacing={1}>
                             <EventAvailableIcon />

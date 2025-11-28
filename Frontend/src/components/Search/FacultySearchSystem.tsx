@@ -21,7 +21,9 @@ import CloseIcon from "@mui/icons-material/Close";
 import SchoolIcon from "@mui/icons-material/School";
 import ArrowForwardIcon from "@mui/icons-material/ArrowForward";
 
-import axiosClient from "../../utils/axiosClient";
+import axios from "axios";
+
+const API_BASE_URL = import.meta.env.VITE_API_URL;
 
 // Styled Components
 const SearchContainer = styled(Box)(({ theme }) => ({
@@ -133,7 +135,10 @@ export default function FacultySearchSystem() {
         if (searchQuery.trim()) params.append('q', searchQuery.trim());
         if (selectedDepartment) params.append('department', selectedDepartment);
 
-        const response = await axiosClient.get(`/faculty/search/?${params}`);
+        const response = await axios.get(
+          `${API_BASE_URL}/faculty/search/?${params}`
+        );
+
         setResults(response.data.results || []);
       } catch (error) {
         console.error('Error searching faculty:', error);
@@ -214,7 +219,7 @@ export default function FacultySearchSystem() {
                     )}
                     {searchQuery && !loading && (
                       <InputAdornment position="end">
-                        <CloseIcon 
+                        <CloseIcon
                           fontSize="small"
                           onClick={clearSearch}
                           sx={{
@@ -326,22 +331,30 @@ export default function FacultySearchSystem() {
                         sx={{
                           width: 70,
                           height: 70,
+                          borderRadius: "50%",          // keeps it circular
+                          overflow: "hidden",           // prevents square corners
                           border: "3px solid",
                           borderColor: "primary.secondary",
-                          boxShadow: theme => `0 0 6px ${theme.palette.primary.main}55`, // subtle glow
-                          p: 0.3, // inner padding to avoid crop
+                          boxShadow: (theme) => `0 0 6px ${theme.palette.primary.main}55`,
                           backgroundColor: "background.paper",
                         }}
-
                         imgProps={{
+                          style: {
+                            width: "100%",
+                            height: "100%",
+                            objectFit: "cover",         // perfect crop
+                          },
                           onError: (e) => {
                             e.currentTarget.onerror = null;
-                            e.currentTarget.src = '';
+                            e.currentTarget.src = "";
                           },
                         }}
                       >
-                        {!faculty.profile_picture && <PersonIcon sx={{ width: 35, height: 35 }} />}
+                        {!faculty.profile_picture && (
+                          <PersonIcon sx={{ width: 35, height: 35 }} />
+                        )}
                       </Avatar>
+
 
                       <Box sx={{ flex: 1 }}>
                         <Typography variant="h6" fontWeight={700} mb={0.5} sx={{ fontSize: "1.1rem" }}>

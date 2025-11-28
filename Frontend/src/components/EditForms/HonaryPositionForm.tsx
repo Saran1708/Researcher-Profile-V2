@@ -34,6 +34,7 @@ const emptyForm = {
 
 const HonaryPositionForm = () => {
     const [honaryList, setHonaryList] = useState([emptyForm]);
+    const [expanded, setExpanded] = useState(false); // ADD THIS LINE
     const [snackbarOpen, setSnackbarOpen] = useState(false);
     const [snackbarMsg, setSnackbarMsg] = useState('');
     const [successSnackbarOpen, setSuccessSnackbarOpen] = useState(false);
@@ -116,7 +117,7 @@ const HonaryPositionForm = () => {
                 }
             }
             setSuccessSnackbarOpen(true);
-            setExpanded(false);
+            setExpanded(false); // This now works correctly
         } catch (err) {
             console.error('Error saving honorary positions:', err);
             setSnackbarMsg('Error saving honorary positions');
@@ -161,7 +162,7 @@ const HonaryPositionForm = () => {
         <Box mt="40px">
             {loading && <Loader />}
             <Container maxWidth="md">
-                <Accordion>
+                <Accordion expanded={expanded} onChange={() => setExpanded(!expanded)}>
                     <AccordionSummary expandIcon={<ExpandMoreIcon />}>
                         <Stack direction="row" alignItems="center" spacing={1}>
                             <WorkspacePremiumIcon />

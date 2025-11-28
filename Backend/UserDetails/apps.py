@@ -12,7 +12,7 @@ class UsersConfig(AppConfig):
 
         try:
             user, created = User.objects.get_or_create(
-                email="admin@mcc.edu",
+                email="admin@mcc.edu.in",
                 defaults={
                     "role": "Admin",
                     "is_staff": True,

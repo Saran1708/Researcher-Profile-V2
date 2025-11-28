@@ -40,15 +40,15 @@ export default function UserAppAppBar() {
   };
 
   const handleHomeClick = () => {
-    navigate('/home');
+    navigate('/staff/home');
   };
 
   const handleEditClick = () => {
-    navigate('/edit')
+    navigate('/staff/edit')
   }
 
   const handleProfileClick = () => {
-    navigate("/profile")
+    navigate("/staff/profile")
   }
 
 

@@ -7,34 +7,28 @@ import Container from '@mui/material/Container';
 import Typography from '@mui/material/Typography';
 import { styled } from '@mui/material/styles';
 
-import DevicesRoundedIcon from '@mui/icons-material/DevicesRounded';
-import EdgesensorHighRoundedIcon from '@mui/icons-material/EdgesensorHighRounded';
-import ViewQuiltRoundedIcon from '@mui/icons-material/ViewQuiltRounded';
+import MenuBookRoundedIcon from '@mui/icons-material/MenuBookRounded';
+import PeopleAltRoundedIcon from '@mui/icons-material/PeopleAltRounded';
+import ScienceRoundedIcon from '@mui/icons-material/ScienceRounded';
 
 const items = [
   {
-    icon: <ViewQuiltRoundedIcon />,
-    title: 'Dashboard',
+    icon: <MenuBookRoundedIcon />,
+    title: 'Publications',
     description:
-      'This item could provide a snapshot of the most important metrics or data points related to the product.',
-    imageLight: `url("${process.env.TEMPLATE_IMAGE_URL || 'https://mui.com'}/static/images/templates/templates-images/dash-light.png")`,
-    imageDark: `url("${process.env.TEMPLATE_IMAGE_URL || 'https://mui.com'}/static/images/templates/templates-images/dash-dark.png")`,
+      'Access comprehensive records of scholarly publications, including journal articles, conference papers, and book chapters authored by our faculty members.',
   },
   {
-    icon: <EdgesensorHighRoundedIcon />,
-    title: 'Mobile integration',
+    icon: <PeopleAltRoundedIcon />,
+    title: 'Faculty Expertise',
     description:
-      'This item could provide information about the mobile app version of the product.',
-    imageLight: `url("${process.env.TEMPLATE_IMAGE_URL || 'https://mui.com'}/static/images/templates/templates-images/mobile-light.png")`,
-    imageDark: `url("${process.env.TEMPLATE_IMAGE_URL || 'https://mui.com'}/static/images/templates/templates-images/mobile-dark.png")`,
+      'Explore detailed profiles of faculty members highlighting their research specializations, academic qualifications, and areas of scholarly interest.',
   },
   {
-    icon: <DevicesRoundedIcon />,
-    title: 'Available on all platforms',
+    icon: <ScienceRoundedIcon />,
+    title: 'Research Projects',
     description:
-      'This item could let users know the product is available on all platforms, such as web, mobile, and desktop.',
-    imageLight: `url("${process.env.TEMPLATE_IMAGE_URL || 'https://mui.com'}/static/images/templates/templates-images/devices-light.png")`,
-    imageDark: `url("${process.env.TEMPLATE_IMAGE_URL || 'https://mui.com'}/static/images/templates/templates-images/devices-dark.png")`,
+      'Discover ongoing and completed research projects, grants received, patents filed, and collaborative initiatives undertaken by our research community.',
   },
 ];
 
@@ -96,28 +90,9 @@ export function MobileLayout({
           />
         ))}
       </Box>
+
       <Card variant="outlined">
-        <Box
-          sx={(theme) => ({
-            mb: 2,
-            backgroundSize: 'cover',
-            backgroundPosition: 'center',
-            minHeight: 280,
-            backgroundImage: 'var(--items-imageLight)',
-            ...theme.applyStyles('dark', {
-              backgroundImage: 'var(--items-imageDark)',
-            }),
-          })}
-          style={
-            items[selectedItemIndex]
-              ? ({
-                  '--items-imageLight': items[selectedItemIndex].imageLight,
-                  '--items-imageDark': items[selectedItemIndex].imageDark,
-                } as any)
-              : {}
-          }
-        />
-        <Box sx={{ px: 2, pb: 2 }}>
+        <Box sx={{ px: 2, py: 3 }}>
           <Typography
             gutterBottom
             sx={{ color: 'text.primary', fontWeight: 'medium' }}
@@ -151,17 +126,18 @@ export default function Features() {
           gutterBottom
           sx={{ color: 'text.primary' }}
         >
-          Product features
+          Research Ecosystem
         </Typography>
+
         <Typography
           variant="body1"
           sx={{ color: 'text.secondary', mb: { xs: 2, sm: 4 } }}
         >
-          Provide a brief overview of the key features of the product. For example,
-          you could list the number of features, their types or benefits, and
-          add-ons.
+          Our platform provides a comprehensive view of the research activities at Madras Christian College, facilitating knowledge discovery and fostering academic collaboration across disciplines.
         </Typography>
       </Box>
+
+      {/* --- FIXED SECTION STARTS HERE --- */}
       <Box
         sx={{
           display: 'flex',
@@ -169,7 +145,8 @@ export default function Features() {
           gap: 2,
         }}
       >
-        <div>
+        {/* LEFT SIDE ITEMS LIST */}
+        <Box>
           <Box
             sx={{
               display: { xs: 'none', sm: 'flex' },
@@ -188,8 +165,10 @@ export default function Features() {
                     p: 2,
                     height: '100%',
                     width: '100%',
+                    textAlign: 'left',
                     '&:hover': {
-                      backgroundColor: (theme.vars || theme).palette.action.hover,
+                      backgroundColor:
+                        (theme.vars || theme).palette.action.hover,
                     },
                   }),
                   selectedItemIndex === index && {
@@ -205,7 +184,6 @@ export default function Features() {
                       flexDirection: 'column',
                       alignItems: 'left',
                       gap: 1,
-                      textAlign: 'left',
                       textTransform: 'none',
                       color: 'text.secondary',
                     },
@@ -215,19 +193,22 @@ export default function Features() {
                   ]}
                 >
                   {icon}
-
                   <Typography variant="h6">{title}</Typography>
                   <Typography variant="body2">{description}</Typography>
                 </Box>
               </Box>
             ))}
           </Box>
+
+          {/* MOBILE LAYOUT */}
           <MobileLayout
             selectedItemIndex={selectedItemIndex}
             handleItemClick={handleItemClick}
             selectedFeature={selectedFeature}
           />
-        </div>
+        </Box>
+
+        {/* RIGHT SIDE VISUAL CARD */}
         <Box
           sx={{
             display: { xs: 'none', sm: 'flex' },
@@ -242,31 +223,62 @@ export default function Features() {
               width: '100%',
               display: { xs: 'none', sm: 'flex' },
               pointerEvents: 'none',
+              background: 'linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%)',
             }}
           >
             <Box
-              sx={(theme) => ({
+              sx={{
                 m: 'auto',
-                width: 420,
-                height: 500,
-                backgroundSize: 'contain',
-                backgroundImage: 'var(--items-imageLight)',
-                ...theme.applyStyles('dark', {
-                  backgroundImage: 'var(--items-imageDark)',
-                }),
-              })}
-              style={
-                items[selectedItemIndex]
-                  ? ({
-                      '--items-imageLight': items[selectedItemIndex].imageLight,
-                      '--items-imageDark': items[selectedItemIndex].imageDark,
-                    } as any)
-                  : {}
-              }
-            />
+                width: '100%',
+                height: '100%',
+                display: 'flex',
+                flexDirection: 'column',
+                alignItems: 'center',
+                justifyContent: 'center',
+                p: 6,
+              }}
+            >
+              <Box
+                sx={{
+                  color: 'primary.main',
+                  mb: 3,
+                  fontSize: '80px',
+                }}
+              >
+                {items[selectedItemIndex]?.icon &&
+                  React.cloneElement(items[selectedItemIndex].icon, {
+                    sx: { fontSize: '80px' },
+                  })}
+              </Box>
+
+              <Typography
+                variant="h4"
+                sx={{
+                  color: 'text.primary',
+                  fontWeight: 600,
+                  mb: 2,
+                  textAlign: 'center',
+                }}
+              >
+                {selectedFeature.title}
+              </Typography>
+
+              <Typography
+                variant="body1"
+                sx={{
+                  color: 'text.secondary',
+                  textAlign: 'center',
+                  maxWidth: '80%',
+                }}
+              >
+                {selectedFeature.description}
+              </Typography>
+            </Box>
           </Card>
         </Box>
       </Box>
+      {/* --- FIXED SECTION ENDS HERE --- */}
+
     </Container>
   );
 }

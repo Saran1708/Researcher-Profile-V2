@@ -29,6 +29,7 @@ const emptyConsultancy = {
 };
 
 const ConsultancyForm = () => {
+  const [expanded, setExpanded] = useState(false);
   const [consultancies, setConsultancies] = useState([emptyConsultancy]);
   const [loading, setLoading] = useState(false);
   const [snackbarOpen, setSnackbarOpen] = useState(false);
@@ -148,7 +149,8 @@ const ConsultancyForm = () => {
     <Box mt={5}>
       {loading && <Loader />}
       <Container maxWidth="md">
-        <Accordion>
+       <Accordion expanded={expanded} onChange={(event, isExpanded) => setExpanded(isExpanded)}>
+
           <AccordionSummary expandIcon={<ExpandMoreIcon />}>
             <Stack direction="row" alignItems="center" spacing={1}>
               <BusinessCenterIcon />

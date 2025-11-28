@@ -25,6 +25,7 @@ import Button from '@mui/material/Button';
 import DownloadIcon from '@mui/icons-material/Download';
 import Loader from '../../components/MainComponents/Loader';
 import axiosClient from '../../utils/axiosClient';
+import * as XLSX from 'xlsx';
 import {
   chartsCustomizations,
   datePickersCustomizations,
@@ -32,6 +33,7 @@ import {
 } from '../theme/customizations';
 import { Link as RouterLink } from 'react-router-dom';
 import Link from '@mui/material/Link';
+
 const xThemeComponents = {
   ...chartsCustomizations,
   ...datePickersCustomizations,
@@ -112,6 +114,43 @@ export default function Funding(props: any) {
     }
   };
 
+  // Export Funding Details to Excel
+  const exportFundingToExcel = () => {
+    // Prepare data for export
+    const exportData = sortedFundings.map((funding) => ({
+      'ID': funding.id,
+      'Staff Name': funding.staffName,
+      'Project Title': funding.projectTitle,
+      'Funding Agency': funding.fundingAgency,
+      'Month & Year': funding.fundingMonthAndYear,
+      'Amount (₹)': funding.fundingAmount,
+      'Status': funding.fundingStatus,
+    }));
+
+    // Create worksheet
+    const worksheet = XLSX.utils.json_to_sheet(exportData);
+
+    // Set column widths
+    worksheet['!cols'] = [
+      { wch: 8 },  // ID
+      { wch: 30 }, // Staff Name
+      { wch: 50 }, // Project Title
+      { wch: 35 }, // Funding Agency
+      { wch: 15 }, // Month & Year
+      { wch: 15 }, // Amount
+      { wch: 15 }, // Status
+    ];
+
+    // Create workbook
+    const workbook = XLSX.utils.book_new();
+    XLSX.utils.book_append_sheet(workbook, worksheet, 'Funding Details');
+
+    // Generate file name with current date
+    const fileName = `Funding_Details_${new Date().toISOString().split('T')[0]}.xlsx`;
+
+    // Save file
+    XLSX.writeFile(workbook, fileName);
+  };
 
   return (
     <AppTheme {...props} themeComponents={xThemeComponents}>
@@ -148,7 +187,19 @@ export default function Funding(props: any) {
               <Typography variant="h6" sx={{ fontWeight: 600, display: 'flex', alignItems: 'center', gap: 1 }}>
                 Funding Details
               </Typography>
-              <Button variant="contained" color="success" startIcon={<DownloadIcon />} sx={{ borderRadius: 2, textTransform: 'none', px: 3, py: 1 }}>
+              <Button
+                variant="contained"
+                color="success"
+                startIcon={<DownloadIcon />}
+                onClick={exportFundingToExcel}
+                sx={{
+                  borderRadius: 2, textTransform: 'none', px: 3, py: 1,
+                  '&:hover': {
+                    backgroundColor: '#43a047', // lighter green
+                  }
+
+                }}
+              >
                 Export
               </Button>
             </Box>
@@ -263,7 +314,7 @@ export default function Funding(props: any) {
                         <TableRow key={funding.id} hover>
                           <TableCell>{funding.id}</TableCell>
                           <TableCell>
-                            
+
                             <Link
                               href={`/profile/${funding.slug}`}
                               target="_blank"

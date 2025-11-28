@@ -28,6 +28,7 @@ import DownloadIcon from '@mui/icons-material/Download';
 import Loader from '../../components/MainComponents/Loader';
 import axiosClient from '../../utils/axiosClient';
 import { Link as RouterLink } from 'react-router-dom';
+import * as XLSX from 'xlsx';
 import {
   chartsCustomizations,
   datePickersCustomizations,
@@ -109,13 +110,47 @@ export default function Publications(props: any) {
       case 'book':
         return 'primary';   // Blue for Book
       case 'article':
-        return 'warning';      // Light blue for Article
-
+        return 'warning';   // Light blue for Article
       default:
         return 'default';   // Grey fallback
     }
   };
 
+  // Export Publications to Excel
+  const exportPublicationsToExcel = () => {
+    // Prepare data for export
+    const exportData = sortedPublications.map((publication) => ({
+      'ID': publication.id,
+      'Name': publication.name,
+      'Publication Title': publication.publicationTitle,
+      'Publication Link': publication.publicationLink,
+      'Type': publication.publicationType,
+      'Month & Year': publication.publicationMonthAndYear,
+    }));
+
+    // Create worksheet
+    const worksheet = XLSX.utils.json_to_sheet(exportData);
+
+    // Set column widths
+    worksheet['!cols'] = [
+      { wch: 8 },  // ID
+      { wch: 30 }, // Name
+      { wch: 50 }, // Publication Title
+      { wch: 60 }, // Publication Link
+      { wch: 15 }, // Type
+      { wch: 15 }, // Month & Year
+    ];
+
+    // Create workbook
+    const workbook = XLSX.utils.book_new();
+    XLSX.utils.book_append_sheet(workbook, worksheet, 'Publications');
+
+    // Generate file name with current date
+    const fileName = `Publications_Details_${new Date().toISOString().split('T')[0]}.xlsx`;
+
+    // Save file
+    XLSX.writeFile(workbook, fileName);
+  };
 
   return (
     <AppTheme {...props} themeComponents={xThemeComponents}>
@@ -152,7 +187,17 @@ export default function Publications(props: any) {
               <Typography variant="h6" sx={{ fontWeight: 600, display: 'flex', alignItems: 'center', gap: 1 }}>
                 Publications Details
               </Typography>
-              <Button variant="contained" color="success" startIcon={<DownloadIcon />} sx={{ borderRadius: 2, textTransform: 'none', px: 3, py: 1 }}>
+              <Button 
+                variant="contained" 
+                color="success" 
+                startIcon={<DownloadIcon />}
+                onClick={exportPublicationsToExcel}
+                sx={{ borderRadius: 2, textTransform: 'none', px: 3, py: 1,
+                  '&:hover': {
+            backgroundColor: '#43a047', // lighter green
+        }
+                 }}
+              >
                 Export
               </Button>
             </Box>
@@ -241,7 +286,6 @@ export default function Publications(props: any) {
                     </TableRow>
                   </TableHead>
                   <TableBody>
-                    {/* 👉 Show "No data found" if empty */}
                     {filteredPublications.length === 0 && !loading && (
                       <TableRow>
                         <TableCell colSpan={6} align="center" sx={{ py: 4 }}>
@@ -255,7 +299,6 @@ export default function Publications(props: any) {
                       <TableRow key={publication.id} hover>
                         <TableCell>{publication.id}</TableCell>
                         <TableCell>
-                          
                           <Link
                             href={`/profile/${publication.slug}`}
                             target="_blank"
@@ -265,7 +308,6 @@ export default function Publications(props: any) {
                           >
                             {publication.name}
                           </Link>
-
                         </TableCell>
                         <TableCell>{publication.publicationTitle}</TableCell>
                         <TableCell>

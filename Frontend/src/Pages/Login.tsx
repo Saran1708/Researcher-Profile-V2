@@ -106,7 +106,7 @@ export default function SignIn(props: { disableCustomTheme?: boolean }) {
       }
 
       else {
-        navigate('/home', { state: { skipLoader: true } });
+        navigate('/staff/home', { state: { skipLoader: true } });
 
       }
     } catch (error: any) {

@@ -38,6 +38,7 @@ const emptyScholar = {
 
 const PhdForm = () => {
   const [phdScholars, setPhdScholars] = useState([emptyScholar]);
+  const [expanded, setExpanded] = useState(false); // ADD THIS LINE
   const [snackbarOpen, setSnackbarOpen] = useState(false);
   const [snackbarMsg, setSnackbarMsg] = useState('');
   const [successSnackbarOpen, setSuccessSnackbarOpen] = useState(false);
@@ -86,31 +87,30 @@ const PhdForm = () => {
   };
 
   const handleDelete = async (index) => {
-  const scholarToDelete = phdScholars[index];
-  if (scholarToDelete.id) {
-    setLoading(true);
-    try {
-      const token = localStorage.getItem('access_token');
-      await axiosClient.delete(`${API_URL}${scholarToDelete.id}/`, {
-        headers: { Authorization: `Bearer ${token}` },
-      });
-    } catch (err) {
-      console.error('Error deleting PhD scholar:', err);
-      setSnackbarMsg('Error deleting scholar');
-      setSnackbarOpen(true);
-      setLoading(false);
-      return; // Stop deletion from UI on backend failure
-    } finally {
-      setLoading(false);
+    const scholarToDelete = phdScholars[index];
+    if (scholarToDelete.id) {
+      setLoading(true);
+      try {
+        const token = localStorage.getItem('access_token');
+        await axiosClient.delete(`${API_URL}${scholarToDelete.id}/`, {
+          headers: { Authorization: `Bearer ${token}` },
+        });
+      } catch (err) {
+        console.error('Error deleting PhD scholar:', err);
+        setSnackbarMsg('Error deleting scholar');
+        setSnackbarOpen(true);
+        setLoading(false);
+        return; // Stop deletion from UI on backend failure
+      } finally {
+        setLoading(false);
+      }
     }
-  }
-  // Remove from UI regardless of backend response (or immediately if no id)
-  setPhdScholars((prev) => {
-    const newList = prev.filter((_, i) => i !== index);
-    return newList.length === 0 ? [emptyScholar] : newList;
-  });
-};
-
+    // Remove from UI regardless of backend response (or immediately if no id)
+    setPhdScholars((prev) => {
+      const newList = prev.filter((_, i) => i !== index);
+      return newList.length === 0 ? [emptyScholar] : newList;
+    });
+  };
 
   const validateForm = () => {
     for (let scholar of phdScholars) {
@@ -155,7 +155,7 @@ const PhdForm = () => {
       }
 
       setSuccessSnackbarOpen(true);
-      setExpanded(false);
+      setExpanded(false); // This now works correctly
     } catch (err) {
       console.error('Error saving PhD data:', err);
       setSnackbarMsg('Error saving PhD data');
@@ -175,7 +175,7 @@ const PhdForm = () => {
     <Box mt="40px">
       {loading && <Loader />}
       <Container maxWidth="md">
-        <Accordion>
+        <Accordion expanded={expanded} onChange={() => setExpanded(!expanded)}>
           <AccordionSummary expandIcon={<ExpandMoreIcon />}>
             <Stack direction="row" alignItems="center" spacing={1}>
               <SchoolIcon />

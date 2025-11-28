@@ -27,6 +27,7 @@ import Loader from '../../components/MainComponents/Loader';
 import axiosClient from '../../utils/axiosClient';
 import Button from '@mui/material/Button';
 import { Link as RouterLink } from 'react-router-dom';
+import * as XLSX from 'xlsx';
 
 import {
   chartsCustomizations,
@@ -163,6 +164,54 @@ export default function Research(props) {
     areasPage * areasRowsPerPage + areasRowsPerPage
   );
 
+  // Export Research IDs to Excel
+  const exportResearchIdsToExcel = () => {
+    const exportData = sortedResearch.map((research) => ({
+      'ID': research.id,
+      'Name': research.name,
+      'Research Title': research.research_title,
+      'Research Link': research.research_link,
+    }));
+
+    const worksheet = XLSX.utils.json_to_sheet(exportData);
+
+    worksheet['!cols'] = [
+      { wch: 8 },  // ID
+      { wch: 30 }, // Name
+      { wch: 50 }, // Research Title
+      { wch: 60 }, // Research Link
+    ];
+
+    const workbook = XLSX.utils.book_new();
+    XLSX.utils.book_append_sheet(workbook, worksheet, 'Research IDs');
+
+    const fileName = `Research_IDs_${new Date().toISOString().split('T')[0]}.xlsx`;
+    XLSX.writeFile(workbook, fileName);
+  };
+
+  // Export Research Areas to Excel
+  const exportResearchAreasToExcel = () => {
+    const exportData = sortedAreas.map((area) => ({
+      'ID': area.id,
+      'Name': area.name,
+      'Research Areas': area.research_areas,
+    }));
+
+    const worksheet = XLSX.utils.json_to_sheet(exportData);
+
+    worksheet['!cols'] = [
+      { wch: 8 },  // ID
+      { wch: 30 }, // Name
+      { wch: 80 }, // Research Areas
+    ];
+
+    const workbook = XLSX.utils.book_new();
+    XLSX.utils.book_append_sheet(workbook, worksheet, 'Research Areas');
+
+    const fileName = `Research_Areas_${new Date().toISOString().split('T')[0]}.xlsx`;
+    XLSX.writeFile(workbook, fileName);
+  };
+
   return (
     <AppTheme {...props} themeComponents={xThemeComponents}>
       <CssBaseline enableColorScheme />
@@ -206,7 +255,12 @@ export default function Research(props) {
                 variant="contained"
                 color="success"
                 startIcon={<DownloadIcon />}
-                sx={{ borderRadius: 2, textTransform: 'none', px: 3, py: 1 }}
+                onClick={exportResearchIdsToExcel}
+                sx={{ borderRadius: 2, textTransform: 'none', px: 3, py: 1 ,
+                  '&:hover': {
+            backgroundColor: '#43a047', // lighter green
+        }
+                }}
               >
                 Export
               </Button>
@@ -334,7 +388,12 @@ export default function Research(props) {
                 variant="contained"
                 color="success"
                 startIcon={<DownloadIcon />}
-                sx={{ borderRadius: 2, textTransform: 'none', px: 3, py: 1 }}
+                onClick={exportResearchAreasToExcel}
+                sx={{ borderRadius: 2, textTransform: 'none', px: 3, py: 1,
+                  '&:hover': {
+            backgroundColor: '#43a047', // lighter green
+        }
+                 }}
               >
                 Export
               </Button>

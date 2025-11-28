@@ -27,7 +27,7 @@ import Loader from '../../components/MainComponents/Loader';
 import axiosClient from '../../utils/axiosClient';
 import { Link as RouterLink } from 'react-router-dom';
 import Link from '@mui/material/Link';
-
+import * as XLSX from 'xlsx';
 
 import {
     chartsCustomizations,
@@ -150,6 +150,87 @@ export default function PhdDetails(props) {
         0
     );
 
+    // Export Staff Count to Excel
+    const exportStaffCountToExcel = () => {
+        // Prepare data for export
+        const exportData = sortedStaff.map((staff, index) => ({
+            'S.No': staff.id,
+            'Staff Name': staff.staffName,
+            'Department': staff.department,
+            'PhD Scholars Registered': staff.phdScholarsRegistered,
+            'PhD Scholars Produced': staff.phdScholarsProduced,
+        }));
+
+        // Add total row
+        exportData.push({
+            'S.No': '',
+            'Staff Name': '',
+            'Department': 'Total',
+            'PhD Scholars Registered': totalStaffRegistered,
+            'PhD Scholars Produced': totalStaffProduced,
+        });
+
+        // Create worksheet
+        const worksheet = XLSX.utils.json_to_sheet(exportData);
+
+        // Set column widths
+        worksheet['!cols'] = [
+            { wch: 8 },  // S.No
+            { wch: 30 }, // Staff Name
+            { wch: 30 }, // Department
+            { wch: 25 }, // PhD Scholars Registered
+            { wch: 25 }, // PhD Scholars Produced
+        ];
+
+        // Create workbook
+        const workbook = XLSX.utils.book_new();
+        XLSX.utils.book_append_sheet(workbook, worksheet, 'PhD Scholars Count');
+
+        // Generate file name with current date
+        const fileName = `PhD_Scholars_Count_${new Date().toISOString().split('T')[0]}.xlsx`;
+
+        // Save file
+        XLSX.writeFile(workbook, fileName);
+    };
+
+    // Export Scholars Details to Excel
+    const exportScholarsDetailsToExcel = () => {
+        // Prepare data for export
+        const exportData = sortedScholars.map((scholar) => ({
+            'S.No': scholar.id,
+            'Staff Name': scholar.staffName,
+            'Department': scholar.department,
+            'Scholar Name': scholar.scholarName,
+            'Topic (Title)': scholar.topic,
+            'Status': scholar.status,
+            'Year of Completion': scholar.yearOfCompletion,
+        }));
+
+        // Create worksheet
+        const worksheet = XLSX.utils.json_to_sheet(exportData);
+
+        // Set column widths
+        worksheet['!cols'] = [
+            { wch: 8 },  // S.No
+            { wch: 30 }, // Staff Name
+            { wch: 30 }, // Department
+            { wch: 30 }, // Scholar Name
+            { wch: 50 }, // Topic
+            { wch: 15 }, // Status
+            { wch: 20 }, // Year of Completion
+        ];
+
+        // Create workbook
+        const workbook = XLSX.utils.book_new();
+        XLSX.utils.book_append_sheet(workbook, worksheet, 'PhD Scholars Details');
+
+        // Generate file name with current date
+        const fileName = `PhD_Scholars_Details_${new Date().toISOString().split('T')[0]}.xlsx`;
+
+        // Save file
+        XLSX.writeFile(workbook, fileName);
+    };
+
     return (
         <AppTheme {...props} themeComponents={xThemeComponents}>
             <CssBaseline enableColorScheme />
@@ -178,7 +259,17 @@ export default function PhdDetails(props) {
                             <Typography variant="h6" sx={{ fontWeight: 600, display: 'flex', alignItems: 'center', gap: 1 }}>
                                 PhD Scholars Count
                             </Typography>
-                            <Button variant="contained" color="success" startIcon={<DownloadIcon />} sx={{ borderRadius: 2, textTransform: 'none', px: 3, py: 1 }}>
+                            <Button 
+                                variant="contained" 
+                                color="success" 
+                                startIcon={<DownloadIcon />} 
+                                onClick={exportStaffCountToExcel}
+                                sx={{ borderRadius: 2, textTransform: 'none', px: 3, py: 1 ,
+                                    '&:hover': {
+            backgroundColor: '#43a047', // lighter green
+        }
+                                }}
+                            >
                                 Export
                             </Button>
                         </Box>
@@ -245,7 +336,6 @@ export default function PhdDetails(props) {
                                                 <TableRow key={staff.id} hover>
                                                     <TableCell>{staff.id}</TableCell>
                                                     <TableCell>
-
                                                         <Link
                                                             href={`/profile/${staff.slug}`}
                                                             target="_blank"
@@ -255,9 +345,7 @@ export default function PhdDetails(props) {
                                                         >
                                                             {staff.staffName}
                                                         </Link>
-
                                                     </TableCell>
-
                                                     <TableCell>{staff.department}</TableCell>
                                                     <TableCell>{staff.phdScholarsRegistered}</TableCell>
                                                     <TableCell>{staff.phdScholarsProduced}</TableCell>
@@ -292,7 +380,17 @@ export default function PhdDetails(props) {
                             <Typography variant="h6" sx={{ fontWeight: 600, display: 'flex', alignItems: 'center', gap: 1 }}>
                                 PhD Scholars Details
                             </Typography>
-                            <Button variant="contained" color="success" startIcon={<DownloadIcon />} sx={{ borderRadius: 2, textTransform: 'none', px: 3, py: 1 }}>
+                            <Button 
+                                variant="contained" 
+                                color="success" 
+                                startIcon={<DownloadIcon />} 
+                                onClick={exportScholarsDetailsToExcel}
+                                sx={{ borderRadius: 2, textTransform: 'none', px: 3, py: 1 ,
+                                    '&:hover': {
+            backgroundColor: '#43a047', // lighter green
+        }
+                                }}
+                            >
                                 Export
                             </Button>
                         </Box>
@@ -368,7 +466,6 @@ export default function PhdDetails(props) {
                                                 <TableRow key={scholar.id} hover>
                                                     <TableCell>{scholar.id}</TableCell>
                                                     <TableCell>
-                                                        
                                                         <Link
                                                             href={`/profile/${scholar.slug}`}
                                                             target="_blank"
@@ -378,9 +475,7 @@ export default function PhdDetails(props) {
                                                         >
                                                             {scholar.staffName}
                                                         </Link>
-
                                                     </TableCell>
-
                                                     <TableCell>{scholar.department}</TableCell>
                                                     <TableCell>{scholar.scholarName}</TableCell>
                                                     <TableCell>{scholar.topic}</TableCell>

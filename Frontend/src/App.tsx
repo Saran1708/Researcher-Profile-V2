@@ -73,7 +73,7 @@ const App = () => {
         <Route path="/login" element={<SignIn />} />
         <Route path="/reset-password" element={<ResetPassword />} />
         <Route
-          path="/edit"
+          path="staff/edit"
           element={
             <PrivateRoute>
               <EditDetails />
@@ -81,7 +81,7 @@ const App = () => {
           }
         />
         <Route
-          path="/home"
+          path="staff/home"
           element={
             <PrivateRoute>
               <UserHome />
@@ -89,7 +89,7 @@ const App = () => {
           }
         />
         <Route
-          path="/profile"
+          path="staff/profile"
           element={
             <PrivateRoute>
               <UserProfile />

@@ -29,6 +29,7 @@ const ResearchCareerForm = () => {
     id: null,
     research_career_details: '',
   });
+  const [expanded, setExpanded] = useState(false); // ADD THIS LINE
   const [loading, setLoading] = useState(false);
   const [snackbarOpen, setSnackbarOpen] = useState(false);
   const [snackbarMsg, setSnackbarMsg] = useState('');
@@ -129,7 +130,7 @@ const ResearchCareerForm = () => {
       }
 
       setSuccessSnackbarOpen(true);
-      setExpanded(false);
+      setExpanded(false); // This now works correctly
     } catch (err) {
       console.error('Error saving research career:', err);
       setSnackbarMsg('Error saving data');
@@ -146,26 +147,26 @@ const ResearchCareerForm = () => {
     <Box mt={5}>
       {loading && <Loader />}
       <Container maxWidth="md">
-        <Accordion>
+        <Accordion expanded={expanded} onChange={() => setExpanded(!expanded)}>
           <AccordionSummary expandIcon={<ExpandMoreIcon />}>
-  <Stack direction="row" alignItems="center" spacing={1}>
-    <ScienceIcon />
-    <Typography fontWeight={600}>Research Career</Typography>
-    <Chip
-      label="Mandatory"
-      size="small"
-      color="warning"
-      sx={{
-        ml: 1,
-        height: 22,
-        fontWeight: 600,
-        fontSize: 12,
-        bgcolor: "warning.light",
-        color: "warning.dark",
-      }}
-    />
-  </Stack>
-</AccordionSummary>
+            <Stack direction="row" alignItems="center" spacing={1}>
+              <ScienceIcon />
+              <Typography fontWeight={600}>Research Career</Typography>
+              <Chip
+                label="Mandatory"
+                size="small"
+                color="warning"
+                sx={{
+                  ml: 1,
+                  height: 22,
+                  fontWeight: 600,
+                  fontSize: 12,
+                  bgcolor: "warning.light",
+                  color: "warning.dark",
+                }}
+              />
+            </Stack>
+          </AccordionSummary>
 
           <AccordionDetails>
             {fetchError ? (

@@ -29,6 +29,7 @@ const CareerHighlightForm = () => {
         id: null,
         career_highlight_details: '',
     });
+    const [expanded, setExpanded] = useState(false); // ADD THIS LINE
     const [loading, setLoading] = useState(false);
     const [snackbarOpen, setSnackbarOpen] = useState(false);
     const [snackbarMsg, setSnackbarMsg] = useState('');
@@ -129,7 +130,7 @@ const CareerHighlightForm = () => {
             }
 
             setSuccessSnackbarOpen(true);
-            setExpanded(false);
+            setExpanded(false); // This now works correctly
         } catch (err) {
             console.error('Error saving career highlight:', err);
             setSnackbarMsg('Error saving data');
@@ -146,26 +147,26 @@ const CareerHighlightForm = () => {
         <Box mt={5}>
             {loading && <Loader />}
             <Container maxWidth="md">
-                <Accordion>
+                <Accordion expanded={expanded} onChange={() => setExpanded(!expanded)}>
                     <AccordionSummary expandIcon={<ExpandMoreIcon />}>
-  <Stack direction="row" alignItems="center" spacing={1}>
-    <StarsIcon />
-    <Typography fontWeight={600}>Career Highlights</Typography>
-    <Chip
-      label="Mandatory"
-      size="small"
-      color="warning"
-      sx={{
-        ml: 1,
-        height: 22,
-        fontWeight: 600,
-        fontSize: 12,
-        bgcolor: "warning.light",
-        color: "warning.dark",
-      }}
-    />
-  </Stack>
-</AccordionSummary>
+                        <Stack direction="row" alignItems="center" spacing={1}>
+                            <StarsIcon />
+                            <Typography fontWeight={600}>Career Highlights</Typography>
+                            <Chip
+                                label="Mandatory"
+                                size="small"
+                                color="warning"
+                                sx={{
+                                    ml: 1,
+                                    height: 22,
+                                    fontWeight: 600,
+                                    fontSize: 12,
+                                    bgcolor: "warning.light",
+                                    color: "warning.dark",
+                                }}
+                            />
+                        </Stack>
+                    </AccordionSummary>
 
                     <AccordionDetails>
                         {fetchError ? (

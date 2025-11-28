@@ -29,6 +29,7 @@ const emptyCollaboration = {
 };
 
 const CollaborationForm = () => {
+  const [expanded, setExpanded] = useState(false);
   const [collaborations, setCollaborations] = useState([emptyCollaboration]);
   const [loading, setLoading] = useState(false);
   const [snackbarOpen, setSnackbarOpen] = useState(false);
@@ -148,7 +149,8 @@ const CollaborationForm = () => {
     <Box mt={5}>
       {loading && <Loader />}
       <Container maxWidth="md">
-        <Accordion>
+        <Accordion expanded={expanded} onChange={(event, isExpanded) => setExpanded(isExpanded)}>
+
           <AccordionSummary expandIcon={<ExpandMoreIcon />}>
             <Stack direction="row" alignItems="center" spacing={1}>
               <Diversity3Icon />

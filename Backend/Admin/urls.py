@@ -4,7 +4,7 @@ from Admin.views import (
     ManageUsersView, UserDetailView,
     PhdScholarsCountView, PhdScholarsDetailsView, PhdSummaryView,
     FundingDetailsView, PublicationListView,
-    ResearchIDListView, ResearchAreasListView
+    ResearchIDListView, ResearchAreasListView, ResetUserPasswordView
 )
 
 urlpatterns = [
@@ -35,4 +35,7 @@ urlpatterns = [
     path('dashboard/phd-status/', views.phd_supervision_status, name='phd_status'),
 
     path('profile-views-analytics/', views.admin_profile_views_analytics, name='admin_profile_views_analytics'),
+    path('users/<int:user_id>/reset-password/', ResetUserPasswordView.as_view(), name='reset-user-password'),
+    
+    path('export/', views.export_data, name='export_data'),
 ]

@@ -9,6 +9,7 @@ from django.views.decorators.http import require_http_methods
 from django.views.decorators.csrf import csrf_exempt
 from datetime import timedelta
 from django.utils import timezone
+from rest_framework.permissions import AllowAny
 
 
 from .models import (
@@ -998,7 +999,7 @@ def public_profile_view(request, slug):
         except ProfileTracker.DoesNotExist:
             return JsonResponse({
                 'error': 'Profile not available',
-                'message': 'Profile tracker not found',
+                'message': 'No Profile available for this user',
                 'is_complete': False
             }, status=404)
         
@@ -1164,6 +1165,7 @@ def public_profile_view(request, slug):
 
 
 @api_view(['GET'])
+@permission_classes([AllowAny])
 def faculty_search(request):
     """
     Global search across all faculty-related models

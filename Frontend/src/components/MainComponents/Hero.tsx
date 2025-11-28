@@ -2,16 +2,10 @@ import * as React from 'react';
 import Box from '@mui/material/Box';
 import Button from '@mui/material/Button';
 import Container from '@mui/material/Container';
-import InputLabel from '@mui/material/InputLabel';
-import Link from '@mui/material/Link';
 import Stack from '@mui/material/Stack';
-import TextField from '@mui/material/TextField';
 import Typography from '@mui/material/Typography';
-import visuallyHidden from '@mui/utils/visuallyHidden';
 import { styled } from '@mui/material/styles';
-
-// If your video is in the public/videos folder, use: /videos/yourvideo.mp4
-const VIDEO_SRC = 'https://drive.google.com/file/d/1Yhp5gQEpMP-UyjvrrTnrK4pDad5JcFeP/view?usp=sharing'; // Adjust path accordingly
+import SearchIcon from '@mui/icons-material/Search';
 
 const StyledBox = styled('div')(({ theme }) => ({
   alignSelf: 'center',
@@ -22,12 +16,35 @@ const StyledBox = styled('div')(({ theme }) => ({
   border: '1px solid',
   borderColor: (theme.vars || theme).palette.grey[200],
   boxShadow: '0 0 12px 8px hsla(220, 25%, 80%, 0.2)',
+  background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
+  display: 'flex',
+  alignItems: 'center',
+  justifyContent: 'center',
+  position: 'relative',
   overflow: 'hidden',
   [theme.breakpoints.up('sm')]: {
     marginTop: theme.spacing(10),
     height: 700,
   },
+  '&::before': {
+    content: '""',
+    position: 'absolute',
+    top: 0,
+    left: 0,
+    right: 0,
+    bottom: 0,
+    background: 'rgba(0, 0, 0, 0.3)',
+    zIndex: 1,
+  },
 }));
+
+const ContentOverlay = styled(Box)({
+  position: 'relative',
+  zIndex: 2,
+  color: 'white',
+  textAlign: 'center',
+  padding: '2rem',
+});
 
 export default function Hero() {
   return (
@@ -49,8 +66,7 @@ export default function Hero() {
           display: 'flex',
           flexDirection: 'column',
           alignItems: 'center',
-          pt: { xs: 14, sm: 20 },
-         
+          pt: { xs: 20, sm: 20 },
         }}
       >
         <Stack
@@ -82,77 +98,51 @@ export default function Hero() {
               Profile
             </Typography>
           </Typography>
+
+          <Typography
+            variant="subtitle1"
+            sx={{
+              textAlign: 'center',
+              color: 'text.secondary',
+              fontWeight: 500,
+              fontSize: '1.1rem',
+            }}
+          >
+            Deanery of Research & Development
+          </Typography>
+
           <Typography
             sx={{
               textAlign: 'center',
               color: 'text.secondary',
-              width: { sm: '100%', md: '80%' },
+              width: { sm: '100%', md: '100%' },
             }}
           >
-           This platform is structured to enhance the visibility of our faculty members by providing a overview of their research interests, areas of expertise, publications and projects.
-          </Typography><br></br>
+            This platform is structured to enhance the visibility of our faculty members by providing an overview of their research interests, areas of expertise, publications, and projects.
+            It also serves as a centralized space for students, collaborators, and industry partners to discover ongoing academic work, explore potential research opportunities, and connect with faculty whose expertise aligns with their interests.
+          </Typography>
+
+
           <Stack
             direction={{ xs: 'column', sm: 'row' }}
             spacing={1}
             useFlexGap
-            sx={{ pt: 2, width: { xs: '100%', sm: '350px' } }}
+            sx={{ pt: 5, width: { xs: '100%', sm: 'auto' } }}
           >
-            <InputLabel htmlFor="email-hero" sx={visuallyHidden}>
-              Email
-            </InputLabel>
-            <TextField
-              id="email-hero"
-              hiddenLabel
-              size="small"
-              variant="outlined"
-              aria-label="Enter your email address"
-              placeholder="Your email address"
-              fullWidth
-              slotProps={{
-                htmlInput: {
-                  autoComplete: 'off',
-                  'aria-label': 'Enter your email address',
-                },
-              }}
-            />
             <Button
               variant="contained"
               color="primary"
-              size="small"
-              sx={{ minWidth: 'fit-content' }}
+              size="large"
+              startIcon={<SearchIcon />}
+              onClick={() => window.location.href = '/search'}
+              sx={{ minWidth: 'fit-content', px: 4, py: 1.5 }}
             >
-              Start now
+              Find Researchers
             </Button>
           </Stack>
-          <Typography
-            variant="caption"
-            color="text.secondary"
-            sx={{ textAlign: 'center' }}
-          >
-            By clicking &quot;Start now&quot; you agree to our&nbsp;
-            <Link href="#" color="primary">
-              Terms & Conditions
-            </Link>
-            .
-          </Typography>
         </Stack>
 
-        {/* Video box replaces image */}
-        <StyledBox id="video">
-          <video
-            src={VIDEO_SRC}
-            autoPlay
-            muted
-            loop
-            playsInline
-            style={{
-              width: '100%',
-              height: '100%',
-              objectFit: 'cover',
-              display: 'block',
-            }}
-          />
-        </StyledBox>
+
       </Container>
     </Box>
   );

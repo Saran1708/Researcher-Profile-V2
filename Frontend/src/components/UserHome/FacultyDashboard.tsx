@@ -334,7 +334,7 @@ export default function Dashboard() {
             color="primary"
             fullWidth
             sx={{ fontWeight: 600, py: 1.2, borderRadius: 2 }}
-            onClick={() => (window.location.href = "/edit")}
+            onClick={() => (window.location.href = "/staff/edit")}
           >
             Go to Edit Profile
           </Button>
@@ -408,7 +408,7 @@ export default function Dashboard() {
                 </Typography>
                 <Box sx={{ display: "flex", alignItems: "center", gap: 1 }}>
                   <Typography variant="body2" sx={{ color: "success.main", fontWeight: 600 }}>
-                    +{profileViews.weeklyGrowth}%
+                    {profileViews.weeklyGrowth}%
                   </Typography>
                   <Typography variant="body2" color="text.secondary">
                     from last week
@@ -428,7 +428,7 @@ export default function Dashboard() {
                 </Typography>
                 <Box sx={{ display: "flex", alignItems: "center", gap: 1 }}>
                   <Typography variant="body2" sx={{ color: "info.main", fontWeight: 600 }}>
-                    +{profileViews.monthlyGrowth}%
+                    {profileViews.monthlyGrowth}%
                   </Typography>
                   <Typography variant="body2" color="text.secondary">
                     from last month
