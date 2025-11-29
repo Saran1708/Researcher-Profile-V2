@@ -31,17 +31,18 @@ const defaultTheme = createTheme();
 const customShadows: Shadows = [...defaultTheme.shadows];
 
 export const brand = {
-  50: 'hsl(210, 100%, 95%)',
-  100: 'hsl(210, 100%, 92%)',
-  200: 'hsl(210, 100%, 80%)',
-  300: 'hsl(210, 100%, 65%)',
-  400: 'hsl(210, 98%, 48%)',
-  500: 'hsl(210, 98%, 42%)',
-  600: 'hsl(210, 98%, 55%)',
-  700: 'hsl(210, 100%, 35%)',
-  800: 'hsl(210, 100%, 16%)',
-  900: 'hsl(210, 100%, 21%)',
+  50:  '#e8e8f1',
+  100: '#c5c4db',
+  200: '#a3a1c4',
+  300: '#7f7dac',
+  400: '#5b5994',
+  500: '#3a3976', // lighter side of #1c1b3b
+  600: '#2c2b52',
+  700: '#1c1b3b', // your exact primary color
+  800: '#141227',
+  900: '#0b0a16',
 };
+
 
 export const gray = {
   50: 'hsl(220, 35%, 97%)',
