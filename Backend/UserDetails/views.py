@@ -918,6 +918,12 @@ def profile_completion_status(request):
     return Response(data, status=status.HTTP_200_OK)
 
 
+from django.http import JsonResponse
+from django.utils import timezone
+from datetime import timedelta
+from rest_framework.decorators import api_view, permission_classes
+from rest_framework.permissions import IsAuthenticated
+
 @api_view(['GET'])
 @permission_classes([IsAuthenticated])
 def profile_view_analytics(request):
@@ -927,53 +933,52 @@ def profile_view_analytics(request):
     # Total views
     total_views = ProfileViewLog.objects.filter(user=user).count()
 
-    # Weekly
+    # Weekly (last 7 days)
     one_week_ago = now - timedelta(days=7)
     weekly_views = ProfileViewLog.objects.filter(
         user=user,
         timestamp__gte=one_week_ago
     ).count()
 
-    # Previous week
-    prev_week = now - timedelta(days=14)
+    # Previous week (7-14 days ago)
+    two_weeks_ago = now - timedelta(days=14)
     prev_weekly_views = ProfileViewLog.objects.filter(
         user=user,
-        timestamp__gte=prev_week,
+        timestamp__gte=two_weeks_ago,
         timestamp__lt=one_week_ago
     ).count()
 
-    # Monthly
+    # Monthly (last 30 days)
     one_month_ago = now - timedelta(days=30)
     monthly_views = ProfileViewLog.objects.filter(
         user=user,
         timestamp__gte=one_month_ago
     ).count()
 
-    # Previous month
-    prev_month = now - timedelta(days=60)
+    # Previous month (30-60 days ago)
+    two_months_ago = now - timedelta(days=60)
     prev_monthly_views = ProfileViewLog.objects.filter(
         user=user,
-        timestamp__gte=prev_month,
+        timestamp__gte=two_months_ago,
         timestamp__lt=one_month_ago
     ).count()
 
-    # Growth calculations
-    weekly_growth = (
-        ((weekly_views - prev_weekly_views) / prev_weekly_views) * 100
-        if prev_weekly_views > 0 else 0
-    )
+    # Growth calculations with better logic
+    def calculate_growth(current, previous):
+        if previous == 0:
+            # If no previous data but current exists, show 100% growth
+            return 100 if current > 0 else 0
+        return round(((current - previous) / previous) * 100, 1)
 
-    monthly_growth = (
-        ((monthly_views - prev_monthly_views) / prev_monthly_views) * 100
-        if prev_monthly_views > 0 else 0
-    )
+    weekly_growth = calculate_growth(weekly_views, prev_weekly_views)
+    monthly_growth = calculate_growth(monthly_views, prev_monthly_views)
 
     return JsonResponse({
         "total": total_views,
         "weekly": weekly_views,
         "monthly": monthly_views,
-        "weeklyGrowth": round(weekly_growth, 1),
-        "monthlyGrowth": round(monthly_growth, 1)
+        "weeklyGrowth": weekly_growth,
+        "monthlyGrowth": monthly_growth
     })
 
 
@@ -1189,6 +1194,14 @@ def faculty_search(request):
     results = []
     
     for staff in staff_query:
+        # ✅ Check if profile is complete before processing
+        try:
+            profile_tracker = ProfileTracker.objects.get(user=staff.email)
+            if not profile_tracker.is_profile_complete:
+                continue  # Skip this staff member if profile is incomplete
+        except ProfileTracker.DoesNotExist:
+            continue  # Skip if no profile tracker exists
+        
         match_found = False
         matched_fields = []
         
@@ -1382,5 +1395,3 @@ def faculty_search(request):
         'results': results,
         'count': len(results)
     })
-
-

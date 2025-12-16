@@ -203,12 +203,12 @@ export default function Dashboard(props: { disableCustomTheme?: boolean }) {
                   <MenuItem value="Botany - Aided">Botany</MenuItem>
                   <MenuItem value="Zoology - Aided">Zoology</MenuItem>
                   <MenuItem value="Physical Education - Aided">Physical Education</MenuItem>
-                  
-                  <MenuItem disabled>
-                    <Typography variant="subtitle2" fontWeight="bold" color="secondary">
-                      Self-Financed Departments
+                   <MenuItem disabled>
+                    <Typography variant="subtitle2" fontWeight="bold" color="primary">
+                     Self-Financed Departments
                     </Typography>
                   </MenuItem>
+                  
                   <MenuItem value="English - SFS">English</MenuItem>
                   <MenuItem value="Tamil - SFS">Tamil</MenuItem>
                   <MenuItem value="Languages - SFS">Languages</MenuItem>
@@ -230,6 +230,13 @@ export default function Dashboard(props: { disableCustomTheme?: boolean }) {
                   <MenuItem value="Physical Education, Health Education and Sports - SFS">Physical Education, Health Education and Sports</MenuItem>
                   <MenuItem value="Psychology - SFS">Psychology</MenuItem>
                   <MenuItem value="Data Science - SFS">Data Science</MenuItem>
+
+                  <MenuItem disabled>
+                    <Typography variant="subtitle2" fontWeight="bold" color="primary">
+                     Units
+                    </Typography>
+                  </MenuItem>
+                  <MenuItem value="MCC - MRF Innovation Park">MCC - MRF Innovation Park</MenuItem>
                 </Select>
               </FormControl>
             </Box>

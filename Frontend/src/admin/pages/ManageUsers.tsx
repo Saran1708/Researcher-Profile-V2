@@ -474,7 +474,9 @@ export default function ManageUsers(props) {
                     minRows={6}
                     value={emailsText}
                     onChange={(e) => setEmailsText(e.target.value)}
-                    placeholder="Enter one email per line\nexample:\njohn@mcc.edu.in\nsarah@mcc.edu.in"
+                    placeholder={`Enter one email per line. example:
+john@mcc.edu.in
+sarah@mcc.edu.in`}
                     style={{
                       width: '100%',
                       padding: '14px',
@@ -482,8 +484,10 @@ export default function ManageUsers(props) {
                       border: '1px solid #ccc',
                       fontSize: '14px',
                       fontFamily: 'inherit',
+                      whiteSpace: 'pre-line', // 👈 this fixes it
                     }}
                   />
+
 
                   <FormControl fullWidth margin="normal">
                     <FormLabel>Role</FormLabel>

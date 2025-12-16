@@ -57,14 +57,20 @@ const PublicationForm = () => {
                 });
 
                 if (Array.isArray(res.data) && res.data.length > 0) {
-                    setPublicationList(res.data.map(pub => ({
-                        id: pub.id,
-                        publication_title: pub.publication_title || '',
-                        publication_link: pub.publication_link || '',
-                        publication_type: pub.publication_type || '',
-                        custom_type: '',
-                        publication_month_and_year: pub.publication_month_and_year || '',
-                    })));
+                    setPublicationList(res.data.map(pub => {
+                        const savedType = pub.publication_type || '';
+                        const standardTypes = ['Journal', 'Article'];
+                        const isCustomType = savedType && !standardTypes.includes(savedType);
+
+                        return {
+                            id: pub.id,
+                            publication_title: pub.publication_title || '',
+                            publication_link: pub.publication_link || '',
+                            publication_type: isCustomType ? 'Custom' : savedType,
+                            custom_type: isCustomType ? savedType : '',
+                            publication_month_and_year: pub.publication_month_and_year || '',
+                        };
+                    }));
                 }
             } catch (err) {
                 console.error('Error fetching publication details:', err);

@@ -134,7 +134,7 @@ export default function AppAppBar() {
                 </Box>
 
                 <MenuItem onClick={handleHomeClick}>Home</MenuItem>
-                <MenuItem>Search</MenuItem>
+                <MenuItem onClick={handleSearchClick}>Search</MenuItem>
 
 
                

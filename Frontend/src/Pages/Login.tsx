@@ -81,7 +81,14 @@ export default function SignIn(props: { disableCustomTheme?: boolean }) {
     const email = data.get('email');
     const password = data.get('password');
 
-    setLoading(true); // show loader only when submitting
+    setLoading(true);
+
+    // Clear previous errors
+    setEmailError(false);
+    setEmailErrorMessage('');
+    setPasswordError(false);
+    setPasswordErrorMessage('');
+
     try {
       const response = await axios.post(`${baseUrl}/api/token/`, {
         email,
@@ -96,49 +103,51 @@ export default function SignIn(props: { disableCustomTheme?: boolean }) {
 
       if (!user.password_changed) {
         if (user.role === "Admin") {
-
           navigate('/admin/home', { state: { skipLoader: true } });
           return;
         } else {
           navigate('/reset-password', { state: { skipLoader: true } });
-          return
+          return;
         }
-      }
-
-      else {
+      } else {
         navigate('/staff/home', { state: { skipLoader: true } });
-
       }
     } catch (error: any) {
-      setLoading(false); // hide loader on error
+      setLoading(false);
 
       if (axios.isAxiosError(error)) {
         if (error.response) {
-          // ✅ Backend responded (invalid credentials or other API error)
-          if (error.response.status === 400 || error.response.status === 401) {
+          const errorMsg = error.response.data?.detail ||
+            error.response.data?.non_field_errors?.[0] ||
+            '';
+
+          // Check for our custom error messages
+          if (errorMsg.includes('EMAIL_NOT_FOUND')) {
+            setEmailError(true);
+            setEmailErrorMessage('This email is not registered in our system. Please contact the administrator.');
+          } else if (errorMsg.includes('INVALID_PASSWORD')) {
             setPasswordError(true);
-            setPasswordErrorMessage('Invalid email or password.');
+            setPasswordErrorMessage('Invalid password. Please try again.');
+          
+          } else if (error.response.status === 500) {
+            setPasswordError(true);
+            setPasswordErrorMessage('Server error. Please try again later.');
           } else {
             setPasswordError(true);
             setPasswordErrorMessage('Something went wrong. Please try again.');
           }
         } else if (error.request) {
-          // 🚫 No response from server (API down / network issue)
           setPasswordError(true);
-          setPasswordErrorMessage('Server not responding. Please try again later.');
+          setPasswordErrorMessage('Cannot connect to server. Please check your internet connection.');
         } else {
-          // ⚙️ Something else (e.g. bad config)
           setPasswordError(true);
           setPasswordErrorMessage('Unexpected error occurred.');
         }
       } else {
-        // Non-Axios error (just in case)
         setPasswordError(true);
         setPasswordErrorMessage('Unexpected error occurred.');
       }
-
     }
-
   };
 
   const validateInputs = () => {

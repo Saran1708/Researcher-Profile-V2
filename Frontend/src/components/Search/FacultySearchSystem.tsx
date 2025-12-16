@@ -303,6 +303,12 @@ export default function FacultySearchSystem() {
               <MenuItem value="Physical Education, Health Education and Sports - SFS">Physical Education, Health Education and Sports</MenuItem>
               <MenuItem value="Psychology - SFS">Psychology</MenuItem>
               <MenuItem value="Data Science - SFS">Data Science</MenuItem>
+              <MenuItem disabled>
+                <Typography variant="subtitle2" fontWeight="bold" color="secondary">
+                 Units
+                </Typography>
+              </MenuItem>
+              <MenuItem value="MCC - MRF Innovation Park">MCC - MRF Innovation Park</MenuItem>
             </Select>
           </FormControl>
 

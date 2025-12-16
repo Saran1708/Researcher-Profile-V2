@@ -37,7 +37,7 @@ const App = () => {
     }
 
     setShowLoader(true);
-    const timer = setTimeout(() => setShowLoader(false), 2000);
+    const timer = setTimeout(() => setShowLoader(false), 1000);
     return () => clearTimeout(timer);
   }, [location]);
 

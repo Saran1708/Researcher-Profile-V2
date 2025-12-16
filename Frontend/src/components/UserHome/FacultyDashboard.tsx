@@ -9,7 +9,6 @@ import Button from "@mui/material/Button";
 import CircularProgress from "@mui/material/CircularProgress";
 import ErrorOutlineIcon from "@mui/icons-material/ErrorOutline";
 import VisibilityIcon from "@mui/icons-material/Visibility";
-import TrendingUpIcon from "@mui/icons-material/TrendingUp";
 import EmojiEventsIcon from "@mui/icons-material/EmojiEvents";
 import SchoolIcon from "@mui/icons-material/School";
 import ArticleIcon from "@mui/icons-material/Article";
@@ -24,6 +23,8 @@ import HandshakeIcon from "@mui/icons-material/Handshake";
 import BusinessCenterIcon from "@mui/icons-material/BusinessCenter";
 import axiosClient from '../../utils/axiosClient';
 import ResearchLoader from "../MainComponents/Loader";
+import TrendingUpIcon from "@mui/icons-material/TrendingUp";
+import TrendingDownIcon from "@mui/icons-material/TrendingDown";
 
 const API_BASE_URL = import.meta.env.VITE_API_URL;
 
@@ -375,7 +376,7 @@ export default function Dashboard() {
 
           <Box sx={{ borderBottom: "1px solid", borderColor: "divider", mb: 4 }} />
 
-          {/* Profile Views Section (Mock Data) */}
+          {/* Profile Views Section */}
           <Box mb={5}>
             <Typography variant="h6" fontWeight={700} mb={3}>
               Profile Analytics
@@ -398,7 +399,11 @@ export default function Dashboard() {
 
               <StatsCard>
                 <Box sx={{ display: "flex", alignItems: "center", mb: 2 }}>
-                  <TrendingUpIcon sx={{ fontSize: 20, color: "success.main", mr: 1.5 }} />
+                  {profileViews.weeklyGrowth >= 0 ? (
+                    <TrendingUpIcon sx={{ fontSize: 20, color: "success.main", mr: 1.5 }} />
+                  ) : (
+                    <TrendingDownIcon sx={{ fontSize: 20, color: "error.main", mr: 1.5 }} />
+                  )}
                   <Typography variant="body1" color="text.secondary" fontWeight={600}>
                     Weekly Views
                   </Typography>
@@ -407,8 +412,14 @@ export default function Dashboard() {
                   {profileViews.weekly}
                 </Typography>
                 <Box sx={{ display: "flex", alignItems: "center", gap: 1 }}>
-                  <Typography variant="body2" sx={{ color: "success.main", fontWeight: 600 }}>
-                    {profileViews.weeklyGrowth}%
+                  <Typography
+                    variant="body2"
+                    sx={{
+                      color: profileViews.weeklyGrowth >= 0 ? "success.main" : "error.main",
+                      fontWeight: 600
+                    }}
+                  >
+                    {profileViews.weeklyGrowth > 0 ? '+' : ''}{profileViews.weeklyGrowth}%
                   </Typography>
                   <Typography variant="body2" color="text.secondary">
                     from last week
@@ -418,7 +429,11 @@ export default function Dashboard() {
 
               <StatsCard>
                 <Box sx={{ display: "flex", alignItems: "center", mb: 2 }}>
-                  <TrendingUpIcon sx={{ fontSize: 20, color: "info.main", mr: 1.5 }} />
+                  {profileViews.monthlyGrowth >= 0 ? (
+                    <TrendingUpIcon sx={{ fontSize: 20, color: "info.main", mr: 1.5 }} />
+                  ) : (
+                    <TrendingDownIcon sx={{ fontSize: 20, color: "error.main", mr: 1.5 }} />
+                  )}
                   <Typography variant="body1" color="text.secondary" fontWeight={600}>
                     Monthly Views
                   </Typography>
@@ -427,8 +442,14 @@ export default function Dashboard() {
                   {profileViews.monthly}
                 </Typography>
                 <Box sx={{ display: "flex", alignItems: "center", gap: 1 }}>
-                  <Typography variant="body2" sx={{ color: "info.main", fontWeight: 600 }}>
-                    {profileViews.monthlyGrowth}%
+                  <Typography
+                    variant="body2"
+                    sx={{
+                      color: profileViews.monthlyGrowth >= 0 ? "success.main" : "error.main",
+                      fontWeight: 600
+                    }}
+                  >
+                    {profileViews.monthlyGrowth > 0 ? '+' : ''}{profileViews.monthlyGrowth}%
                   </Typography>
                   <Typography variant="body2" color="text.secondary">
                     from last month
@@ -437,7 +458,6 @@ export default function Dashboard() {
               </StatsCard>
             </Box>
           </Box>
-
           {/* Academic & Research Stats (Real Data) */}
           <Box mb={5}>
             <Typography variant="h6" fontWeight={700} mb={3}>
